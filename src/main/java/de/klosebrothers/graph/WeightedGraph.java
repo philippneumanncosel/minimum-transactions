@@ -23,10 +23,11 @@ public class WeightedGraph {
         return vertices.stream().filter(vertex -> vertexName.equals(vertex.getName())).findFirst();
     }
 
-    public void addEdge(Vertex sourceVertex, Vertex destinationVertex, double edgeWeight) {
+    public WeightedEdge addEdge(Vertex sourceVertex, Vertex destinationVertex, double edgeWeight) {
         WeightedEdge edge = new WeightedEdge(sourceVertex, destinationVertex, edgeWeight);
         sourceVertex.addOutEdge(edge);
         destinationVertex.addInEdge(edge);
+        return edge;
     }
 
     public void removeEdge(Vertex sourceVertex, Vertex destinationVertex) {
