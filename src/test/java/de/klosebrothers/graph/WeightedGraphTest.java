@@ -3,6 +3,7 @@ package de.klosebrothers.graph;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import java.util.Optional;
 
 class WeightedGraphTest {
 
@@ -14,6 +15,27 @@ class WeightedGraphTest {
         graph.addVertex(vertex);
 
         assertThat(graph.getVertices()).contains(vertex);
+    }
+
+    @Test
+    void itShouldReturnExistingVertexWithGivenName() {
+        WeightedGraph graph = new WeightedGraph();
+        Vertex vertex = new Vertex("vertex");
+
+        graph.addVertex(vertex);
+
+        Optional<Vertex> vertexMaybe = graph.getVertexByName("vertex");
+
+        assertThat(vertexMaybe).contains(vertex);
+    }
+
+    @Test
+    void itShouldNotReturnNonExistingVertexWithGivenName() {
+        WeightedGraph graph = new WeightedGraph();
+
+        Optional<Vertex> vertexMaybe = graph.getVertexByName("vertex");
+
+        assertThat(vertexMaybe).isEmpty();
     }
 
     @Test

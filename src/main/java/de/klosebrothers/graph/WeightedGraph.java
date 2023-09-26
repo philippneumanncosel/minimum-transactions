@@ -19,6 +19,10 @@ public class WeightedGraph {
         vertices.add(vertex);
     }
 
+    public Optional<Vertex> getVertexByName(String vertexName) {
+        return vertices.stream().filter(vertex -> vertexName.equals(vertex.getName())).findFirst();
+    }
+
     public void addEdge(Vertex sourceVertex, Vertex destinationVertex, double edgeWeight) {
         WeightedEdge edge = new WeightedEdge(sourceVertex, destinationVertex, edgeWeight);
         sourceVertex.addOutEdge(edge);
