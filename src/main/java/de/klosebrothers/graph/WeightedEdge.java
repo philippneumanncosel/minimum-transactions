@@ -11,4 +11,8 @@ public class WeightedEdge {
     private Vertex source;
     private Vertex destination;
     private double weight;
+
+    public void addWeight(double weightToAdd) {
+        weight += weightToAdd;
+    }
 }
