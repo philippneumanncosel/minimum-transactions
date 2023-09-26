@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class PaymentsTest {
 
-
     @Test
     void itShouldReturnZeroForUnknownPersons() {
         Payments payments = new Payments();

@@ -6,7 +6,7 @@ import de.klosebrothers.graph.WeightedGraph;
 import java.util.Optional;
 
 public class Payments {
-    private WeightedGraph graph;
+    private final WeightedGraph graph;
 
     public Payments() {
         graph = new WeightedGraph();
