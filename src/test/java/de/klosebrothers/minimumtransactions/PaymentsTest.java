@@ -90,4 +90,26 @@ class PaymentsTest {
         assertThat(paymentAlexClara).isEqualTo(3.0);
         assertThat(paymentBobDennis).isEqualTo(2.0);
     }
+
+    @Test
+    void itShouldReturnZeroInfluxForUnkwownPerson() {
+        Payments payments = new Payments();
+
+        double influx = payments.getInflux("unknown");
+
+        assertThat(influx).isZero();
+    }
+
+    @Test
+    void itShouldReturnCorrectInflux() {
+        Payments payments = new Payments();
+
+        payments.registerPayment("Alex", "Bob", 10.0);
+        payments.registerPayment("Bob", "Clara", 3.0);
+        payments.registerPayment("Bob", "Dennis", 2.0);
+
+        double influx = payments.getInflux("Bob");
+
+        assertThat(influx).isEqualTo(5.0);
+    }
 }

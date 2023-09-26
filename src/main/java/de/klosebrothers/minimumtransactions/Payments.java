@@ -28,6 +28,11 @@ public class Payments {
         return giverMaybe.get().getOutEdgeToVertex(recipientMaybe.get()).map(WeightedEdge::getWeight).orElse(0.0);
     }
 
+    public double getInflux(String name) {
+        Optional<Vertex> person = graph.getVertexByName(name);
+        return person.map(Vertex::getInflux).orElse(0.0);
+    }
+
     private Vertex getOrCreatePerson(String name) {
         return graph.getVertexByName(name).orElseGet(() -> createNewPerson(name));
     }
