@@ -1,11 +1,11 @@
 package de.klosebrothers.minimumtransactions;
 
-import de.klosebrothers.graph.Vertex;
-import de.klosebrothers.graph.WeightedEdge;
-import de.klosebrothers.graph.WeightedGraph;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import de.klosebrothers.graph.Vertex;
+import de.klosebrothers.graph.WeightedEdge;
+import de.klosebrothers.graph.WeightedGraph;
 
 public class Payments {
     private final WeightedGraph graph;
@@ -37,6 +37,18 @@ public class Payments {
 
     public Map<String, Double> getAllInfluxes() {
         return graph.getVertices().stream().collect(Collectors.toMap(Vertex::getName, Vertex::getInflux));
+    }
+
+    public String getResolvingPayments() {
+        return graph.getVertices().stream()
+                .flatMap(vertex -> vertex.getInEdges().values().stream())
+                .map(Payments::getPaymentAsString)
+                .sorted()
+                .collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    private static String getPaymentAsString(WeightedEdge edge) {
+        return edge.getDestination().getName() + " owes " + edge.getSource().getName() + " " + edge.getWeight();
     }
 
     private Vertex getOrCreatePerson(String name) {

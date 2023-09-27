@@ -1,5 +1,6 @@
 package de.klosebrothers.minimumtransactions;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -8,10 +9,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class PaymentsTest {
 
+    private Payments payments;
+
+    @BeforeEach
+    void setUp() {
+        payments = new Payments();
+    }
+
     @Test
     void itShouldReturnZeroForUnknownPersons() {
-        Payments payments = new Payments();
-
         double payment = payments.getTotalPaymentFromTo("unknown", "alsoUnkown");
 
         assertThat(payment).isZero();
@@ -19,8 +25,6 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnZeroForUnknownGiver() {
-        Payments payments = new Payments();
-
         payments.registerPayment("sampleName", "known", 10.0);
 
         double payment = payments.getTotalPaymentFromTo("unknown", "known");
@@ -30,8 +34,6 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnZeroForUnknownRecipient() {
-        Payments payments = new Payments();
-
         payments.registerPayment("known", "sampleName", 10.0);
 
         double payment = payments.getTotalPaymentFromTo("known", "unknown");
@@ -41,8 +43,6 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnZeroForKnownPersonsWithNoPaymentHistory() {
-        Payments payments = new Payments();
-
         payments.registerPayment("A", "B", 10.0);
         payments.registerPayment("B", "C", 10.0);
 
@@ -53,8 +53,6 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnPayment() {
-        Payments payments = new Payments();
-
         payments.registerPayment("Alex", "Bob", 10.0);
 
         double payment = payments.getTotalPaymentFromTo("Alex", "Bob");
@@ -64,8 +62,6 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnSumOfMultiplePayments() {
-        Payments payments = new Payments();
-
         payments.registerPayment("Alex", "Bob", 10.0);
         payments.registerPayment("Alex", "Bob", 3.0);
         payments.registerPayment("Alex", "Bob", 2.0);
@@ -77,11 +73,7 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnPaymentsForMultiplePersons() {
-        Payments payments = new Payments();
-
-        payments.registerPayment("Alex", "Bob", 10.0);
-        payments.registerPayment("Alex", "Clara", 3.0);
-        payments.registerPayment("Bob", "Dennis", 2.0);
+        registerExamplePayments();
 
         double paymentAlexBob = payments.getTotalPaymentFromTo("Alex", "Bob");
         double paymentAlexClara = payments.getTotalPaymentFromTo("Alex", "Clara");
@@ -94,8 +86,6 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnZeroInfluxForUnkwownPerson() {
-        Payments payments = new Payments();
-
         double influx = payments.getInfluxForPerson("unknown");
 
         assertThat(influx).isZero();
@@ -103,11 +93,7 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnCorrectInfluxForPerson() {
-        Payments payments = new Payments();
-
-        payments.registerPayment("Alex", "Bob", 10.0);
-        payments.registerPayment("Bob", "Clara", 3.0);
-        payments.registerPayment("Bob", "Dennis", 2.0);
+        registerExamplePayments();
 
         double influx = payments.getInfluxForPerson("Bob");
 
@@ -116,11 +102,7 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnCorrectInfluxesForAllPersons() {
-        Payments payments = new Payments();
-
-        payments.registerPayment("Alex", "Bob", 10.0);
-        payments.registerPayment("Bob", "Clara", 3.0);
-        payments.registerPayment("Bob", "Dennis", 2.0);
+        registerExamplePayments();
 
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
 
@@ -129,5 +111,25 @@ class PaymentsTest {
                 .containsEntry("Bob", 5.0)
                 .containsEntry("Clara", 3.0)
                 .containsEntry("Dennis", 2.0);
+    }
+
+    @Test
+    void itShouldListAllResolvingPayments() {
+        registerExamplePayments();
+        payments.registerPayment("Alex", "Clara", 6.0);
+
+        String resolvingPayments = payments.getResolvingPayments();
+
+        assertThat(resolvingPayments).isEqualTo("""
+                Bob owes Alex 10.0
+                Clara owes Alex 6.0
+                Clara owes Bob 3.0
+                Dennis owes Bob 2.0""");
+    }
+
+    private void registerExamplePayments() {
+        payments.registerPayment("Alex", "Bob", 10.0);
+        payments.registerPayment("Bob", "Clara", 3.0);
+        payments.registerPayment("Bob", "Dennis", 2.0);
     }
 }
