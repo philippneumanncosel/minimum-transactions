@@ -3,7 +3,9 @@ package de.klosebrothers.minimumtransactions;
 import de.klosebrothers.graph.Vertex;
 import de.klosebrothers.graph.WeightedEdge;
 import de.klosebrothers.graph.WeightedGraph;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Payments {
     private final WeightedGraph graph;
@@ -28,9 +30,13 @@ public class Payments {
         return giverMaybe.get().getOutEdgeToVertex(recipientMaybe.get()).map(WeightedEdge::getWeight).orElse(0.0);
     }
 
-    public double getInflux(String name) {
+    public double getInfluxForPerson(String name) {
         Optional<Vertex> person = graph.getVertexByName(name);
         return person.map(Vertex::getInflux).orElse(0.0);
+    }
+
+    public Map<String, Double> getAllInfluxes() {
+        return graph.getVertices().stream().collect(Collectors.toMap(Vertex::getName, Vertex::getInflux));
     }
 
     private Vertex getOrCreatePerson(String name) {

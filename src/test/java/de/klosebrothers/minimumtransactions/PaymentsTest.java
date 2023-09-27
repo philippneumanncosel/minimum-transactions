@@ -2,6 +2,8 @@ package de.klosebrothers.minimumtransactions;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PaymentsTest {
@@ -94,21 +96,38 @@ class PaymentsTest {
     void itShouldReturnZeroInfluxForUnkwownPerson() {
         Payments payments = new Payments();
 
-        double influx = payments.getInflux("unknown");
+        double influx = payments.getInfluxForPerson("unknown");
 
         assertThat(influx).isZero();
     }
 
     @Test
-    void itShouldReturnCorrectInflux() {
+    void itShouldReturnCorrectInfluxForPerson() {
         Payments payments = new Payments();
 
         payments.registerPayment("Alex", "Bob", 10.0);
         payments.registerPayment("Bob", "Clara", 3.0);
         payments.registerPayment("Bob", "Dennis", 2.0);
 
-        double influx = payments.getInflux("Bob");
+        double influx = payments.getInfluxForPerson("Bob");
 
         assertThat(influx).isEqualTo(5.0);
+    }
+
+    @Test
+    void itShouldReturnCorrectInfluxesForAllPersons() {
+        Payments payments = new Payments();
+
+        payments.registerPayment("Alex", "Bob", 10.0);
+        payments.registerPayment("Bob", "Clara", 3.0);
+        payments.registerPayment("Bob", "Dennis", 2.0);
+
+        Map<String, Double> allInfluxes = payments.getAllInfluxes();
+
+        assertThat(allInfluxes)
+                .containsEntry("Alex", -10.0)
+                .containsEntry("Bob", 5.0)
+                .containsEntry("Clara", 3.0)
+                .containsEntry("Dennis", 2.0);
     }
 }
