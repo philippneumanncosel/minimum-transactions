@@ -295,6 +295,4 @@ class WeightedGraphTest {
         assertThat(vertexB.getOutEdgeToVertex(vertexC)).isEmpty();
         assertThat(vertexC.getOutEdgeToVertex(vertexA)).isPresent();
     }
-
-
 }
