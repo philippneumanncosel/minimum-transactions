@@ -15,4 +15,8 @@ public class WeightedEdge {
     public void addWeight(double weightToAdd) {
         weight += weightToAdd;
     }
+
+    public void subtractWeight(double weightToSubtract) {
+        addWeight(-weightToSubtract);
+    }
 }

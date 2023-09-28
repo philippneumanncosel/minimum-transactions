@@ -27,4 +27,13 @@ class WeightedEdgeTest {
 
         assertThat(weightedEdge.getWeight()).isEqualTo(5.0);
     }
+
+    @Test
+    void itShouldSubtractAmountFromEdgeWeight() {
+        final WeightedEdge weightedEdge = new WeightedEdge(null, null, 3.0);
+
+        weightedEdge.subtractWeight(1.0);
+
+        assertThat(weightedEdge.getWeight()).isEqualTo(2.0);
+    }
 }
