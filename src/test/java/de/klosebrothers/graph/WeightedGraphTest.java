@@ -295,4 +295,70 @@ class WeightedGraphTest {
         assertThat(vertexB.getOutEdgeToVertex(vertexC)).isEmpty();
         assertThat(vertexC.getOutEdgeToVertex(vertexA)).isPresent();
     }
+
+    @Test
+    void itShouldFlipEdgeByCreatingNewEdge() {
+        WeightedGraph graph = new WeightedGraph();
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        WeightedEdge edge = graph.addEdge(vertexA, vertexB, -1.0);
+
+        WeightedEdge flippedEdge = graph.flipEdge(edge);
+
+        assertThat(flippedEdge.getSource()).isEqualTo(vertexB);
+        assertThat(flippedEdge.getDestination()).isEqualTo(vertexA);
+        assertThat(flippedEdge.getWeight()).isOne();
+
+        assertThat(vertexA.getOutEdgeToVertex(vertexB)).isEmpty();
+        assertThat(vertexB.getOutEdgeToVertex(vertexA)).contains(flippedEdge);
+    }
+
+    @Test
+    void itShouldFlipEdgeByAddingWeightToExistingEdge() {
+        WeightedGraph graph = new WeightedGraph();
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        WeightedEdge existingEdge = graph.addEdge(vertexB, vertexA, 2.0);
+        WeightedEdge edge = graph.addEdge(vertexA, vertexB, -1.0);
+
+        WeightedEdge flippedEdge = graph.flipEdge(edge);
+
+        assertThat(flippedEdge.getSource()).isEqualTo(vertexB);
+        assertThat(flippedEdge.getDestination()).isEqualTo(vertexA);
+        assertThat(flippedEdge.getWeight()).isEqualTo(3.0);
+
+        assertThat(vertexA.getOutEdgeToVertex(vertexB)).isEmpty();
+        assertThat(vertexB.getOutEdgeToVertex(vertexA)).contains(flippedEdge);
+
+        assertThat(flippedEdge).isEqualTo(existingEdge);
+    }
+
+    @Test
+    void itShouldFlipOnlyNegativeEdges() {
+        WeightedGraph graph = new WeightedGraph();
+
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+        Vertex vertexC = new Vertex("C");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addVertex(vertexC);
+        WeightedEdge negativeEdge = graph.addEdge(vertexA, vertexB, -2.0);
+        WeightedEdge positiveEdge = graph.addEdge(vertexB, vertexC, 3.0);
+
+        graph.flipEdgesWithNegativeWeight(List.of(negativeEdge, positiveEdge));
+
+        assertThat(vertexB.getOutEdgeToVertex(vertexA)).isPresent();
+        assertThat(vertexB.getOutEdgeToVertex(vertexA).get().getWeight()).isEqualTo(2.0);
+
+        assertThat(vertexB.getOutEdgeToVertex(vertexC)).isPresent();
+        assertThat(vertexB.getOutEdgeToVertex(vertexC).get().getWeight()).isEqualTo(3.0);
+    }
 }

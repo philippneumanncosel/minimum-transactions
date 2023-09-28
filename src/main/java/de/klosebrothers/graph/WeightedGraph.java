@@ -109,4 +109,18 @@ public class WeightedGraph {
                 .filter(edge -> edge.getWeight() == 0)
                 .forEach(edge -> removeEdge(edge.getSource(), edge.getDestination()));
     }
+
+    public void flipEdgesWithNegativeWeight(List<WeightedEdge> edges) {
+        edges.stream().filter(edge -> edge.getWeight() < 0.0).forEach(this::flipEdge);
+    }
+
+    public WeightedEdge flipEdge(WeightedEdge edge) {
+        removeEdge(edge.getSource(), edge.getDestination());
+        Optional<WeightedEdge> flippedEdgeMaybe = edge.getDestination().getOutEdgeToVertex(edge.getSource());
+        if (flippedEdgeMaybe.isPresent()) {
+            flippedEdgeMaybe.get().subtractWeight(edge.getWeight());
+            return flippedEdgeMaybe.get();
+        }
+        return addEdge(edge.getDestination(), edge.getSource(), -edge.getWeight());
+    }
 }
