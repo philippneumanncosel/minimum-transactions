@@ -76,7 +76,7 @@ class PaymentsTest {
         registerExamplePayments();
 
         double paymentAlexBob = payments.getTotalPaymentFromTo("Alex", "Bob");
-        double paymentAlexClara = payments.getTotalPaymentFromTo("Alex", "Clara");
+        double paymentAlexClara = payments.getTotalPaymentFromTo("Bob", "Clara");
         double paymentBobDennis = payments.getTotalPaymentFromTo("Bob", "Dennis");
 
         assertThat(paymentAlexBob).isEqualTo(10.0);
