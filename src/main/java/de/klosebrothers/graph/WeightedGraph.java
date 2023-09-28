@@ -99,4 +99,8 @@ public class WeightedGraph {
     public double getSmallestWeight(List<WeightedEdge> edges) {
         return edges.stream().map(WeightedEdge::getWeight).min(Comparator.naturalOrder()).orElse(0.0);
     }
+
+    public void reduceEdgeWeights(List<WeightedEdge> edges, double amountToReduce) {
+        edges.forEach(edge -> edge.subtractWeight(amountToReduce));
+    }
 }

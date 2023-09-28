@@ -258,4 +258,19 @@ class WeightedGraphTest {
 
         assertThat(smallestWeightOfCycle).isOne();
     }
+
+    @Test
+    void itShouldSubtractAmountFromEdgeWeights() {
+        WeightedGraph graph = new WeightedGraph();
+
+        WeightedEdge edgeA = new WeightedEdge(null , null, 3.0);
+        WeightedEdge edgeB = new WeightedEdge(null , null, 4.0);
+        WeightedEdge edgeC = new WeightedEdge(null , null, 5.0);
+
+        graph.reduceEdgeWeights(List.of(edgeA, edgeB, edgeC), 2.0);
+
+        assertThat(edgeA.getWeight()).isOne();
+        assertThat(edgeB.getWeight()).isEqualTo(2.0);
+        assertThat(edgeC.getWeight()).isEqualTo(3.0);
+    }
 }
