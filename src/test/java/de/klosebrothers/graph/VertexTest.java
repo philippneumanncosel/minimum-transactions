@@ -2,6 +2,7 @@ package de.klosebrothers.graph;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -127,6 +128,20 @@ class VertexTest {
         Optional<WeightedEdge> edge = destinationVertex.getInEdgeFromVertex(sourceVertex);
 
         assertThat(edge).contains(edgeMock);
+    }
+
+    @Test
+    void itShouldReturnOutVertices() {
+        Vertex sourceVertex = new Vertex("source vertex");
+        Vertex destinationVertex = new Vertex("destination vertex");
+
+        WeightedEdge edgeMock = mock(WeightedEdge.class);
+        when(edgeMock.getDestination()).thenReturn(destinationVertex);
+        sourceVertex.addOutEdge(edgeMock);
+
+        List<Vertex> outVertices = sourceVertex.getOutVertices();
+
+        assertThat(outVertices).contains(destinationVertex);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package de.klosebrothers.graph;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,10 @@ public class Vertex {
 
     public Optional<WeightedEdge> getInEdgeFromVertex(Vertex vertex) {
         return Optional.ofNullable(inEdges.getOrDefault(vertex, null));
+    }
+
+    public List<Vertex> getOutVertices() {
+        return outEdges.values().stream().map(WeightedEdge::getDestination).toList();
     }
 
     public double getInflux() {

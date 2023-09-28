@@ -77,7 +77,7 @@ class WeightedGraphTest {
     void itShouldReturnEmptyListForUnconnectedVertex() {
         WeightedGraph graph = new WeightedGraph();
 
-        List<Vertex> cycleVerteces = graph.getCycleContainingVertex(new Vertex("unkwown"));
+        List<Vertex> cycleVerteces = graph.getSmallestCycleContainingVertex(new Vertex("unkwown"));
 
         assertThat(cycleVerteces).isEmpty();
     }
@@ -96,7 +96,7 @@ class WeightedGraphTest {
         graph.addEdge(vertexB, vertexA, 0.0);
         graph.addEdge(vertexB, vertexC, 0.0);
 
-        List<Vertex> cycleVerteces = graph.getCycleContainingVertex(vertexC);
+        List<Vertex> cycleVerteces = graph.getSmallestCycleContainingVertex(vertexC);
 
         assertThat(cycleVerteces).isEmpty();
     }
@@ -112,7 +112,7 @@ class WeightedGraphTest {
         graph.addEdge(vertexA, vertexB, 0.0);
         graph.addEdge(vertexB, vertexA, 0.0);
 
-        List<Vertex> cycleVerteces = graph.getCycleContainingVertex(vertexA);
+        List<Vertex> cycleVerteces = graph.getSmallestCycleContainingVertex(vertexA);
 
         assertThat(cycleVerteces).containsExactly(vertexA, vertexB);
     }
@@ -134,8 +134,31 @@ class WeightedGraphTest {
         graph.addEdge(vertexC, vertexD, 0.0);
         graph.addEdge(vertexD, vertexA, 0.0);
 
-        List<Vertex> cycleVerteces = graph.getCycleContainingVertex(vertexA);
+        List<Vertex> cycleVerteces = graph.getSmallestCycleContainingVertex(vertexA);
 
         assertThat(cycleVerteces).containsExactly(vertexA, vertexB, vertexC, vertexD);
+    }
+
+    @Test
+    void itShouldReturnSmallestCycleForVertexContainedInMultipleCycle() {
+        WeightedGraph graph = new WeightedGraph();
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+        Vertex vertexC = new Vertex("C");
+        Vertex vertexD = new Vertex("D");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addVertex(vertexC);
+        graph.addVertex(vertexD);
+        graph.addEdge(vertexA, vertexB, 0.0);
+        graph.addEdge(vertexB, vertexC, 0.0);
+        graph.addEdge(vertexC, vertexD, 0.0);
+        graph.addEdge(vertexC, vertexA, 0.0);
+        graph.addEdge(vertexD, vertexA, 0.0);
+
+        List<Vertex> cycleVerteces = graph.getSmallestCycleContainingVertex(vertexA);
+
+        assertThat(cycleVerteces).containsExactly(vertexA, vertexB, vertexC);
     }
 }

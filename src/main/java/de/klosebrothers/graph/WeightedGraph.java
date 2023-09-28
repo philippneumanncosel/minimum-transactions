@@ -1,11 +1,12 @@
 package de.klosebrothers.graph;
 
-import lombok.Getter;
-import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.function.Predicate;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -41,7 +42,7 @@ public class WeightedGraph {
         destinationVertex.removeInEdge(edge);
     }
 
-    public List<Vertex> getCycleContainingVertex(Vertex vertex) {
+    public List<Vertex> getSmallestCycleContainingVertex(Vertex vertex) {
         List<Vertex> visited = new ArrayList<>();
         Stack<Vertex> potentialCycle = new Stack<>();
         processVertexForCyclesSearch(vertex, visited, potentialCycle);
@@ -51,22 +52,18 @@ public class WeightedGraph {
     private boolean processVertexForCyclesSearch(Vertex vertex, List<Vertex> visited, Stack<Vertex> potentialCycle) {
         visited.add(vertex);
         potentialCycle.push(vertex);
-        boolean foundCycle = vertex.getOutEdges().values().stream()
-                .map(WeightedEdge::getDestination)
-                .anyMatch(destinationEdge -> {
-                    if (potentialCycle.contains(destinationEdge)) {
-                        return true;
-                    }
-                    if (!visited.contains(destinationEdge)) {
-                        return processVertexForCyclesSearch(destinationEdge, visited, potentialCycle);
-                    }
-                    return false;
-                });
-        if (foundCycle) {
+        boolean detectedCycle = vertex.getOutVertices().stream()
+                .anyMatch(potentialCycle::contains);
+        if (detectedCycle) {
             return true;
-        } else {
-            potentialCycle.pop();
-            return false;
         }
+        detectedCycle  = vertex.getOutVertices().stream()
+                .filter(Predicate.not(visited::contains))
+                .anyMatch(nextVertex -> processVertexForCyclesSearch(nextVertex, visited, potentialCycle));
+        if (detectedCycle) {
+            return true;
+        }
+        potentialCycle.pop();
+        return false;
     }
 }
