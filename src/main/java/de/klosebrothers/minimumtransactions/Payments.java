@@ -50,12 +50,11 @@ public class Payments {
 
     public void eliminateAllCyclicPayments() {
         List<Vertex> cycle;
-        do {
-            cycle = graph.getCycle();
+        while (!(cycle = graph.getCycle()).isEmpty()) {
             List<WeightedEdge> edgesOfCycle = graph.getEdgesOfCycle(cycle);
             graph.reduceEdgeWeights(edgesOfCycle, graph.getSmallestWeight(edgesOfCycle));
             graph.deleteEdgesWithZeroWeight(edgesOfCycle);
-        } while (!cycle.isEmpty());
+        }
     }
 
     private static String getPaymentAsString(WeightedEdge edge) {
