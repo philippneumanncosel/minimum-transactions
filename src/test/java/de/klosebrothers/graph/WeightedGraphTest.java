@@ -96,9 +96,9 @@ class WeightedGraphTest {
         graph.addEdge(vertexB, vertexA, 0.0);
         graph.addEdge(vertexB, vertexC, 0.0);
 
-        List<Vertex> cycleVerteces = graph.getSmallestCycleContainingVertex(vertexC);
+        List<Vertex> cycleVertices = graph.getSmallestCycleContainingVertex(vertexC);
 
-        assertThat(cycleVerteces).isEmpty();
+        assertThat(cycleVertices).isEmpty();
     }
 
     @Test
@@ -112,9 +112,9 @@ class WeightedGraphTest {
         graph.addEdge(vertexA, vertexB, 0.0);
         graph.addEdge(vertexB, vertexA, 0.0);
 
-        List<Vertex> cycleVerteces = graph.getSmallestCycleContainingVertex(vertexA);
+        List<Vertex> cycleVertices = graph.getSmallestCycleContainingVertex(vertexA);
 
-        assertThat(cycleVerteces).containsExactly(vertexA, vertexB);
+        assertThat(cycleVertices).containsExactly(vertexA, vertexB);
     }
 
     @Test
@@ -134,9 +134,9 @@ class WeightedGraphTest {
         graph.addEdge(vertexC, vertexD, 0.0);
         graph.addEdge(vertexD, vertexA, 0.0);
 
-        List<Vertex> cycleVerteces = graph.getSmallestCycleContainingVertex(vertexA);
+        List<Vertex> cycleVertices = graph.getSmallestCycleContainingVertex(vertexA);
 
-        assertThat(cycleVerteces).containsExactly(vertexA, vertexB, vertexC, vertexD);
+        assertThat(cycleVertices).containsExactly(vertexA, vertexB, vertexC, vertexD);
     }
 
     @Test
@@ -157,9 +157,9 @@ class WeightedGraphTest {
         graph.addEdge(vertexC, vertexA, 0.0);
         graph.addEdge(vertexD, vertexA, 0.0);
 
-        List<Vertex> cycleVerteces = graph.getSmallestCycleContainingVertex(vertexA);
+        List<Vertex> cycleVertices = graph.getSmallestCycleContainingVertex(vertexA);
 
-        assertThat(cycleVerteces).containsExactly(vertexA, vertexB, vertexC);
+        assertThat(cycleVertices).containsExactly(vertexA, vertexB, vertexC);
     }
 
     @Test
