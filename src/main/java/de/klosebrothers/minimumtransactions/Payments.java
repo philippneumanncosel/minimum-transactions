@@ -1,5 +1,6 @@
 package de.klosebrothers.minimumtransactions;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,6 +46,16 @@ public class Payments {
                 .map(Payments::getPaymentAsString)
                 .sorted()
                 .collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    public void eliminateAllCyclicPayments() {
+        List<Vertex> cycle;
+        do {
+            cycle = graph.getCycle();
+            List<WeightedEdge> edgesOfCycle = graph.getEdgesOfCycle(cycle);
+            graph.reduceEdgeWeights(edgesOfCycle, graph.getSmallestWeight(edgesOfCycle));
+            graph.deleteEdgesWithZeroWeight(edgesOfCycle);
+        } while (!cycle.isEmpty());
     }
 
     private static String getPaymentAsString(WeightedEdge edge) {

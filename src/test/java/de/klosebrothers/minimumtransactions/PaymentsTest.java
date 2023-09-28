@@ -127,6 +127,39 @@ class PaymentsTest {
                 Dennis owes Bob 2.0""");
     }
 
+    @Test
+    void itShouldEliminateMinimalCyclicPaymentsWhileRetainingEqualInfluxes() {
+        payments.registerPayment("Alex", "Bob", 6.0);
+        payments.registerPayment("Bob", "Alex", 5.0);
+
+        payments.eliminateAllCyclicPayments();
+        Map<String, Double> allInfluxes = payments.getAllInfluxes();
+        String resolvingPayments = payments.getResolvingPayments();
+
+        assertThat(resolvingPayments).isEqualTo("Bob owes Alex 1.0");
+        assertThat(allInfluxes)
+                .containsEntry("Alex", -1.0)
+                .containsEntry("Bob", 1.0);
+    }
+
+    @Test
+    void itShouldEliminateMultipleCyclicPaymentsWhileRetainingEqualInfluxes() {
+        payments.registerPayment("Alex", "Bob", 16.0);
+        payments.registerPayment("Bob", "Claire", 10.0);
+        payments.registerPayment("Claire", "Alex", 10.0);
+        payments.registerPayment("Bob", "Alex", 5.0);
+
+        payments.eliminateAllCyclicPayments();
+        Map<String, Double> allInfluxes = payments.getAllInfluxes();
+        String resolvingPayments = payments.getResolvingPayments();
+
+        assertThat(resolvingPayments).isEqualTo("Bob owes Alex 1.0");
+        assertThat(allInfluxes)
+                .containsEntry("Alex", -1.0)
+                .containsEntry("Bob", 1.0)
+                .containsEntry("Claire", 0.0);
+    }
+
     private void registerExamplePayments() {
         payments.registerPayment("Alex", "Bob", 10.0);
         payments.registerPayment("Bob", "Clara", 3.0);
