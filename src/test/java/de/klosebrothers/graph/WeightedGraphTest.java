@@ -3,6 +3,7 @@ package de.klosebrothers.graph;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import java.util.List;
 import java.util.Optional;
 
 class WeightedGraphTest {
@@ -70,5 +71,71 @@ class WeightedGraphTest {
         graph.removeEdge(sourceVertex, destinationVertex);
 
         assertThat(sourceVertex.getOutEdgeToVertex(destinationVertex)).isEmpty();
+    }
+
+    @Test
+    void itShouldReturnEmptyListForUnconnectedVertex() {
+        WeightedGraph graph = new WeightedGraph();
+
+        List<Vertex> cycleVerteces = graph.getCycleContainingVertex(new Vertex("unkwown"));
+
+        assertThat(cycleVerteces).isEmpty();
+    }
+
+    @Test
+    void itShouldReturnEmptyListForConnectedVertexThatIsNotPartOfACycle() {
+        WeightedGraph graph = new WeightedGraph();
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+        Vertex vertexC = new Vertex("C");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addVertex(vertexC);
+        graph.addEdge(vertexA, vertexB, 0.0);
+        graph.addEdge(vertexB, vertexA, 0.0);
+        graph.addEdge(vertexB, vertexC, 0.0);
+
+        List<Vertex> cycleVerteces = graph.getCycleContainingVertex(vertexC);
+
+        assertThat(cycleVerteces).isEmpty();
+    }
+
+    @Test
+    void itShouldReturnCycleForVertexContainedInMinimalCycle() {
+        WeightedGraph graph = new WeightedGraph();
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addEdge(vertexA, vertexB, 0.0);
+        graph.addEdge(vertexB, vertexA, 0.0);
+
+        List<Vertex> cycleVerteces = graph.getCycleContainingVertex(vertexA);
+
+        assertThat(cycleVerteces).containsExactly(vertexA, vertexB);
+    }
+
+    @Test
+    void itShouldReturnCycleForVertexContainedInLargerCycle() {
+        WeightedGraph graph = new WeightedGraph();
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+        Vertex vertexC = new Vertex("C");
+        Vertex vertexD = new Vertex("D");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addVertex(vertexC);
+        graph.addVertex(vertexD);
+        graph.addEdge(vertexA, vertexB, 0.0);
+        graph.addEdge(vertexB, vertexC, 0.0);
+        graph.addEdge(vertexC, vertexD, 0.0);
+        graph.addEdge(vertexD, vertexA, 0.0);
+
+        List<Vertex> cycleVerteces = graph.getCycleContainingVertex(vertexA);
+
+        assertThat(cycleVerteces).containsExactly(vertexA, vertexB, vertexC, vertexD);
     }
 }

@@ -5,6 +5,7 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Stack;
 
 @Getter
 @Setter
@@ -38,5 +39,34 @@ public class WeightedGraph {
         WeightedEdge edge = edgeMaybe.get();
         sourceVertex.removeOutEdge(edge);
         destinationVertex.removeInEdge(edge);
+    }
+
+    public List<Vertex> getCycleContainingVertex(Vertex vertex) {
+        List<Vertex> visited = new ArrayList<>();
+        Stack<Vertex> potentialCycle = new Stack<>();
+        processVertexForCyclesSearch(vertex, visited, potentialCycle);
+        return potentialCycle.stream().toList();
+    }
+
+    private boolean processVertexForCyclesSearch(Vertex vertex, List<Vertex> visited, Stack<Vertex> potentialCycle) {
+        visited.add(vertex);
+        potentialCycle.push(vertex);
+        boolean foundCycle = vertex.getOutEdges().values().stream()
+                .map(WeightedEdge::getDestination)
+                .anyMatch(destinationEdge -> {
+                    if (potentialCycle.contains(destinationEdge)) {
+                        return true;
+                    }
+                    if (!visited.contains(destinationEdge)) {
+                        return processVertexForCyclesSearch(destinationEdge, visited, potentialCycle);
+                    }
+                    return false;
+                });
+        if (foundCycle) {
+            return true;
+        } else {
+            potentialCycle.pop();
+            return false;
+        }
     }
 }
