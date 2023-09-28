@@ -103,4 +103,10 @@ public class WeightedGraph {
     public void reduceEdgeWeights(List<WeightedEdge> edges, double amountToReduce) {
         edges.forEach(edge -> edge.subtractWeight(amountToReduce));
     }
+
+    public void deleteEdgesWithZeroWeight(List<WeightedEdge> edges) {
+        edges.stream()
+                .filter(edge -> edge.getWeight() == 0)
+                .forEach(edge -> removeEdge(edge.getSource(), edge.getDestination()));
+    }
 }

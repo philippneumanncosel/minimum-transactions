@@ -273,4 +273,28 @@ class WeightedGraphTest {
         assertThat(edgeB.getWeight()).isEqualTo(2.0);
         assertThat(edgeC.getWeight()).isEqualTo(3.0);
     }
+
+    @Test
+    void itShouldRemoveEdgesWithZeroWeight() {
+        WeightedGraph graph = new WeightedGraph();
+
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+        Vertex vertexC = new Vertex("C");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addVertex(vertexC);
+        WeightedEdge edgeA = graph.addEdge(vertexA, vertexB, 0.0);
+        WeightedEdge edgeB = graph.addEdge(vertexB, vertexC, 0.0);
+        WeightedEdge edgeC = graph.addEdge(vertexC, vertexA, 2.0);
+
+        graph.deleteEdgesWithZeroWeight(List.of(edgeA, edgeB, edgeC));
+
+        assertThat(vertexA.getOutEdgeToVertex(vertexB)).isEmpty();
+        assertThat(vertexB.getOutEdgeToVertex(vertexC)).isEmpty();
+        assertThat(vertexC.getOutEdgeToVertex(vertexA)).isPresent();
+    }
+
+
 }
