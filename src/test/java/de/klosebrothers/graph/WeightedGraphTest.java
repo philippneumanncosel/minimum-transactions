@@ -3,6 +3,7 @@ package de.klosebrothers.graph;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -201,5 +202,60 @@ class WeightedGraphTest {
         List<Vertex> cycleVertices = graph.getCycle();
 
         assertThat(cycleVertices).contains(vertexB, vertexC, vertexD);
+    }
+
+    @Test
+    void itShouldReturnEmptyListForEmptyCycle() {
+        WeightedGraph graph = new WeightedGraph();
+
+        List<WeightedEdge> cycleEdges = graph.getEdgesOfCycle(new ArrayList<>());
+
+        assertThat(cycleEdges).isEmpty();
+    }
+
+    @Test
+    void itShouldReturnEdgesForGivenCycle() {
+        WeightedGraph graph = new WeightedGraph();
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+        Vertex vertexC = new Vertex("C");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addVertex(vertexC);
+        graph.addEdge(vertexA, vertexB, 0.0);
+        graph.addEdge(vertexB, vertexC, 0.0);
+        graph.addEdge(vertexC, vertexA, 0.0);
+
+        List<WeightedEdge> cycleEdges = graph.getEdgesOfCycle(List.of(vertexA, vertexB, vertexC));
+
+        assertThat(cycleEdges).hasSize(3);
+        assertThat(cycleEdges.get(0).getSource()).isEqualTo(vertexA);
+        assertThat(cycleEdges.get(1).getSource()).isEqualTo(vertexB);
+        assertThat(cycleEdges.get(2).getSource()).isEqualTo(vertexC);
+        assertThat(cycleEdges.get(0).getDestination()).isEqualTo(vertexB);
+        assertThat(cycleEdges.get(1).getDestination()).isEqualTo(vertexC);
+        assertThat(cycleEdges.get(2).getDestination()).isEqualTo(vertexA);
+    }
+
+    @Test
+    void itShouldReturnZeroForEmptyEdgeList() {
+        WeightedGraph graph = new WeightedGraph();
+
+        double smallestWeightOfCycle = graph.getSmallestWeight(new ArrayList<>());
+
+        assertThat(smallestWeightOfCycle).isZero();
+    }
+
+    @Test
+    void itShouldReturnSmallestWeightForCycle() {
+        WeightedGraph graph = new WeightedGraph();
+        WeightedEdge edgeA = new WeightedEdge(null , null, 1.0);
+        WeightedEdge edgeB = new WeightedEdge(null , null, 2.0);
+        WeightedEdge edgeC = new WeightedEdge(null , null, 3.0);
+
+        double smallestWeightOfCycle = graph.getSmallestWeight(List.of(edgeA, edgeB, edgeC));
+
+        assertThat(smallestWeightOfCycle).isOne();
     }
 }

@@ -1,6 +1,7 @@
 package de.klosebrothers.graph;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
@@ -75,5 +76,27 @@ public class WeightedGraph {
         }
         potentialCycle.pop();
         return false;
+    }
+
+    public List<WeightedEdge> getEdgesOfCycle(List<Vertex> cycleVertices) {
+        ArrayList<WeightedEdge> cycleEdges = new ArrayList<>();
+        if (!cycleVertices.isEmpty()) {
+            for (int vertexIndex = 0; vertexIndex < cycleVertices.size() - 1; vertexIndex++) {
+                Optional<WeightedEdge> edgeMaybe = cycleVertices.get(vertexIndex)
+                        .getOutEdgeToVertex(cycleVertices.get(vertexIndex + 1));
+                if (edgeMaybe.isEmpty()) {
+                    continue;
+                }
+                cycleEdges.add(edgeMaybe.get());
+            }
+            Optional<WeightedEdge> closingCycleEdge = cycleVertices.get(cycleVertices.size() - 1)
+                    .getOutEdgeToVertex(cycleVertices.get(0));
+            closingCycleEdge.ifPresent(cycleEdges::add);
+        }
+        return cycleEdges;
+    }
+
+    public double getSmallestWeight(List<WeightedEdge> edges) {
+        return edges.stream().map(WeightedEdge::getWeight).min(Comparator.naturalOrder()).orElse(0.0);
     }
 }
