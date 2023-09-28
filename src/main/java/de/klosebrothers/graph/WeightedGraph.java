@@ -42,6 +42,16 @@ public class WeightedGraph {
         destinationVertex.removeInEdge(edge);
     }
 
+    public List<Vertex> getCycle() {
+        for (Vertex vertex : vertices) {
+            List<Vertex> cycle = getSmallestCycleContainingVertex(vertex);
+            if (!cycle.isEmpty()) {
+                return cycle;
+            }
+        }
+        return new ArrayList<>();
+    }
+
     public List<Vertex> getSmallestCycleContainingVertex(Vertex vertex) {
         List<Vertex> visited = new ArrayList<>();
         Stack<Vertex> potentialCycle = new Stack<>();
