@@ -104,6 +104,67 @@ public class WeightedGraph {
         edges.forEach(edge -> edge.subtractWeight(amountToReduce));
     }
 
+    public Optional<List<WeightedEdge>> getMaximumChain() {
+        List<List<WeightedEdge>> chains = vertices.stream()
+                .flatMap(vertex -> vertex.getOutEdges().values().stream())
+                .map(this::getMaximumChainFromStartEdge)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        Long highestCountOfEqualWeight = chains.stream()
+                .map(chain -> getNumberOfEdgesWithWeight(chain, chain.get(0).getWeight()))
+                .max(Comparator.naturalOrder())
+                .orElse(0L);
+        return chains.stream().filter(chain -> getNumberOfEdgesWithWeight(chain, chain.get(0)
+                .getWeight()) == highestCountOfEqualWeight).findFirst();
+    }
+
+    public Optional<List<WeightedEdge>> getMaximumChainFromStartEdge(WeightedEdge edge) {
+        double weightToFind = edge.getWeight();
+        List<WeightedEdge> edgePath = List.of(edge);
+        List<List<WeightedEdge>> edgePaths = new ArrayList<>();
+        edgePaths.add(edgePath);
+        addAllEdgesToPathsRecursively(edge, edgePaths, edgePath);
+        edgePaths.forEach(edges -> removeTrailingEdgesNotHavingWeight(edges, weightToFind));
+        return getEdgePathContainingMostEdgesWithCertainWeightAndLeastOther(edgePaths, weightToFind);
+    }
+
+    private void addAllEdgesToPathsRecursively(WeightedEdge edge, List<List<WeightedEdge>> edgePaths, List<WeightedEdge> edgePath) {
+        edge.getDestination().getOutEdges().values().stream()
+                .filter(Predicate.not(edgePath::contains))
+                .forEach(nextEdge -> {
+                    List<WeightedEdge> nextEdgePath = new ArrayList<>(List.copyOf(edgePath));
+                    nextEdgePath.add(nextEdge);
+                    edgePaths.add(nextEdgePath);
+                    addAllEdgesToPathsRecursively(nextEdge, edgePaths, nextEdgePath);
+                });
+    }
+
+    public void removeTrailingEdgesNotHavingWeight(List<WeightedEdge> edges, double weight) {
+        while (edges.get(edges.size() - 1).getWeight() != weight) {
+            edges.remove(edges.size() - 1);
+        }
+    }
+
+    public Optional<List<WeightedEdge>> getEdgePathContainingMostEdgesWithCertainWeightAndLeastOther(List<List<WeightedEdge>> edgePaths, double weight) {
+        Optional<Long> maxOccurrenceOfWeightMaybe = edgePaths.stream()
+                .filter(edges -> edges.size() >= 2)
+                .map(edges -> getNumberOfEdgesWithWeight(edges, weight))
+                .max(Comparator.naturalOrder());
+        if (maxOccurrenceOfWeightMaybe.isEmpty()) {
+            return Optional.empty();
+        }
+        List<List<WeightedEdge>> filteredEdges = edgePaths.stream()
+                .filter(edges -> getNumberOfEdgesWithWeight(edges, weight) == maxOccurrenceOfWeightMaybe.get()).toList();
+        Optional<Integer> minNumberOfEdgesMaybe = filteredEdges.stream().map(List::size).min(Comparator.naturalOrder());
+        return minNumberOfEdgesMaybe.flatMap(integer -> filteredEdges.stream().filter(edges -> edges.size() == integer)
+                .findFirst());
+    }
+
+    public long getNumberOfEdgesWithWeight(List<WeightedEdge> edges, double weight) {
+        return edges.stream().filter(edge -> edge.getWeight() == weight).count();
+    }
+
     public void deleteEdgesWithZeroWeight(List<WeightedEdge> edges) {
         edges.stream()
                 .filter(edge -> edge.getWeight() == 0)
