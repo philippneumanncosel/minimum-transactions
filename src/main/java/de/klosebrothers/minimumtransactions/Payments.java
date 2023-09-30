@@ -57,6 +57,25 @@ public class Payments {
         }
     }
 
+    public void eliminateAllChainedPayments() {
+        Optional<List<WeightedEdge>> chainMaybe;
+        while ((chainMaybe = graph.getMaximumChain()).isPresent()) {
+            List<WeightedEdge> chain = chainMaybe.get();
+            double chainWeight = chain.get(0).getWeight();
+            graph.reduceEdgeWeights(chain, chainWeight);
+            Vertex chainSource = chain.get(0).getSource();
+            Vertex chainDestination = chain.get(chain.size() - 1).getDestination();
+            Optional<WeightedEdge> chainSourceDestinationEdgeMaybe = chainSource.getOutEdgeToVertex(chainDestination);
+            if (chainSourceDestinationEdgeMaybe.isPresent()) {
+                chainSourceDestinationEdgeMaybe.get().addWeight(chainWeight);
+            } else {
+                graph.addEdge(chainSource, chainDestination, chainWeight);
+            }
+            graph.flipEdgesWithNegativeWeight(chain);
+            graph.deleteEdgesWithZeroWeight(chain);
+        }
+    }
+
     private static String getPaymentAsString(WeightedEdge edge) {
         return edge.getDestination().getName() + " owes " + edge.getSource().getName() + " " + edge.getWeight();
     }

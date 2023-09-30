@@ -160,6 +160,79 @@ class PaymentsTest {
                 .containsEntry("Claire", 0.0);
     }
 
+    @Test
+    void itShouldEliminateMinimalChainedPaymentsWhileRetainingEqualInfluxes() {
+        payments.registerPayment("Alex", "Bob", 5.0);
+        payments.registerPayment("Bob", "Claire", 5.0);
+
+        payments.eliminateAllChainedPayments();
+        Map<String, Double> allInfluxes = payments.getAllInfluxes();
+        String resolvingPayments = payments.getResolvingPayments();
+
+        assertThat(resolvingPayments).isEqualTo("Claire owes Alex 5.0");
+        assertThat(allInfluxes)
+                .containsEntry("Alex", -5.0)
+                .containsEntry("Bob", 0.0)
+                .containsEntry("Claire", 5.0);
+    }
+
+    @Test
+    void itShouldEliminateLargerChainedPaymentsWhileRetainingEqualInfluxes() {
+        payments.registerPayment("Alex", "Bob", 1.0);
+        payments.registerPayment("Bob", "Claire", 2.0);
+        payments.registerPayment("Claire", "Dennis", 2.0);
+        payments.registerPayment("Dennis", "Eddy", 1.0);
+        payments.registerPayment("Eddy", "Frank", 2.0);
+
+        payments.eliminateAllChainedPayments();
+        Map<String, Double> allInfluxes = payments.getAllInfluxes();
+        String resolvingPayments = payments.getResolvingPayments();
+
+        assertThat(resolvingPayments).isEqualTo("""
+                        Bob owes Alex 1.0
+                        Dennis owes Eddy 1.0
+                        Frank owes Bob 2.0""");
+        assertThat(allInfluxes)
+                .containsEntry("Alex", -1.0)
+                .containsEntry("Bob", -1.0)
+                .containsEntry("Claire", 0.0)
+                .containsEntry("Dennis", 1.0)
+                .containsEntry("Eddy", -1.0)
+                .containsEntry("Frank", 2.0);
+    }
+
+    @Test
+    void itShouldEliminateMultipleChainedPaymentsWhileRetainingEqualInfluxes() {
+        payments.registerPayment("Alex", "Bob", 2.0);
+        payments.registerPayment("Bob", "Claire", 2.0);
+        payments.registerPayment("Claire", "Dennis", 1.0);
+        payments.registerPayment("Dennis", "Eddy", 2.0);
+        payments.registerPayment("Eddy", "Frank", 2.0);
+        payments.registerPayment("Bob", "Greg", 2.0);
+        payments.registerPayment("Greg", "Claire", 2.0);
+        payments.registerPayment("Claire", "Henry", 2.0);
+        payments.registerPayment("Henry", "Frank", 3.0);
+
+        payments.eliminateAllChainedPayments();
+        Map<String, Double> allInfluxes = payments.getAllInfluxes();
+        String resolvingPayments = payments.getResolvingPayments();
+
+        assertThat(resolvingPayments).isEqualTo("""
+                        Claire owes Dennis 1.0
+                        Frank owes Alex 2.0
+                        Frank owes Henry 3.0
+                        Henry owes Bob 2.0""");
+        assertThat(allInfluxes)
+                .containsEntry("Alex", -2.0)
+                .containsEntry("Bob", -2.0)
+                .containsEntry("Claire", 1.0)
+                .containsEntry("Dennis", -1.0)
+                .containsEntry("Eddy", 0.0)
+                .containsEntry("Frank", 5.0)
+                .containsEntry("Greg", 0.0)
+                .containsEntry("Henry", -1.0);
+    }
+
     private void registerExamplePayments() {
         payments.registerPayment("Alex", "Bob", 10.0);
         payments.registerPayment("Bob", "Clara", 3.0);
