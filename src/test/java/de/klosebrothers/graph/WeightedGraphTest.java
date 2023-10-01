@@ -94,10 +94,10 @@ class WeightedGraphTest {
         graph.addVertex(vertexB);
         graph.addVertex(vertexC);
         graph.addEdge(vertexA, vertexB, 0.0);
-        graph.addEdge(vertexB, vertexA, 0.0);
         graph.addEdge(vertexB, vertexC, 0.0);
+        graph.addEdge(vertexC, vertexB, 0.0);
 
-        List<Vertex> cycleVertices = graph.getSmallestCycleContainingVertex(vertexC);
+        List<Vertex> cycleVertices = graph.getSmallestCycleContainingVertex(vertexA);
 
         assertThat(cycleVertices).isEmpty();
     }

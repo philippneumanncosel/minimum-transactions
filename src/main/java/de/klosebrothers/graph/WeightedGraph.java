@@ -56,22 +56,19 @@ public class WeightedGraph {
     public List<Vertex> getSmallestCycleContainingVertex(Vertex vertex) {
         List<Vertex> visited = new ArrayList<>();
         Stack<Vertex> potentialCycle = new Stack<>();
-        processVertexForCyclesSearch(vertex, visited, potentialCycle);
+        processVertexForCyclesSearch(vertex, vertex, visited, potentialCycle);
         return potentialCycle.stream().toList();
     }
 
-    private boolean processVertexForCyclesSearch(Vertex vertex, List<Vertex> visited, Stack<Vertex> potentialCycle) {
-        visited.add(vertex);
-        potentialCycle.push(vertex);
-        boolean detectedCycle = vertex.getOutVertices().stream()
-                .anyMatch(potentialCycle::contains);
-        if (detectedCycle) {
+    private boolean processVertexForCyclesSearch(Vertex startVertex, Vertex currentVertex, List<Vertex> visited, Stack<Vertex> potentialCycle) {
+        visited.add(currentVertex);
+        potentialCycle.push(currentVertex);
+        if (currentVertex.getOutVertices().contains(startVertex) && potentialCycle.size() > 1) {
             return true;
         }
-        detectedCycle  = vertex.getOutVertices().stream()
-                .filter(Predicate.not(visited::contains))
-                .anyMatch(nextVertex -> processVertexForCyclesSearch(nextVertex, visited, potentialCycle));
-        if (detectedCycle) {
+        if (currentVertex.getOutVertices().stream()
+                .filter(Predicate.not(visited::contains)).toList().stream()
+                .anyMatch(nextVertex -> processVertexForCyclesSearch(startVertex, nextVertex, visited, potentialCycle))) {
             return true;
         }
         potentialCycle.pop();
