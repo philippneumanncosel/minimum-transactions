@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -233,9 +234,33 @@ class PaymentsTest {
                 .containsEntry("Henry", -1.0);
     }
 
+    @Test
+    void itShouldSimplifyRandomPaymentsWhileRetainingEqualInfluxes() {
+        registerRandomPayments(100, 500, 1337);
+        Map<String, Double> expectedInfluxes = payments.getAllInfluxes();
+
+        payments.simplify();
+
+        Map<String, Double> actualInfluxes = payments.getAllInfluxes();
+        assertThat(actualInfluxes).containsExactlyInAnyOrderEntriesOf(expectedInfluxes);
+    }
+
     private void registerExamplePayments() {
         payments.registerPayment("Alex", "Bob", 10.0);
         payments.registerPayment("Bob", "Clara", 3.0);
         payments.registerPayment("Bob", "Dennis", 2.0);
+    }
+
+    private void registerRandomPayments(int numberPersons, int numberPayments, int seed) {
+        Random random = new Random(seed);
+        for (int payment = 0; payment < numberPayments; payment++) {
+            int amount = random.nextInt(1, 3);
+            int giver = random.nextInt(1, numberPersons);
+            int recipient = random.nextInt(1, numberPersons);
+            if (giver == recipient) {
+                ++recipient;
+            }
+            payments.registerPayment("Person"+giver, "Person"+recipient, amount);
+        }
     }
 }

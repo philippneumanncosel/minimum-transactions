@@ -48,6 +48,17 @@ public class Payments {
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
+    public void simplify() {
+        while (!isSimplified()){
+            eliminateAllCyclicPayments();
+            eliminateAllChainedPayments();
+        }
+    }
+
+    public boolean isSimplified() {
+        return graph.getCycle().isEmpty() && graph.getMaximumChain().isEmpty();
+    }
+
     public void eliminateAllCyclicPayments() {
         List<Vertex> cycle;
         while (!(cycle = graph.getCycle()).isEmpty()) {
