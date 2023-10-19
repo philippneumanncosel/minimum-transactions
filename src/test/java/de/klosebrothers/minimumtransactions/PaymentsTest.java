@@ -235,6 +235,51 @@ class PaymentsTest {
     }
 
     @Test
+    void itShouldEliminateIndirectPayments() {
+        payments.registerPayment("Alex", "Bob", 1.0);
+        payments.registerPayment("Alex", "Claire", 1.0);
+        payments.registerPayment("Bob", "Claire", 2.0);
+
+        payments.eliminateAllIndirectPayments();
+        Map<String, Double> allInfluxes = payments.getAllInfluxes();
+        String resolvingPayments = payments.getResolvingPayments();
+
+        assertThat(resolvingPayments).isEqualTo("""
+                        Claire owes Alex 2.0
+                        Claire owes Bob 1.0""");
+        assertThat(allInfluxes)
+                .containsEntry("Alex", -2.0)
+                .containsEntry("Bob", -1.0)
+                .containsEntry("Claire", 3.0);
+    }
+
+    @Test
+    void itShouldEliminateMultipleIndirectPayments() {
+        payments.registerPayment("Alex", "Bob", 1.0);
+        payments.registerPayment("Alex", "Eddy", 1.0);
+        payments.registerPayment("Bob", "Claire", 2.0);
+        payments.registerPayment("Claire", "Dennis", 3.0);
+        payments.registerPayment("Claire", "Eddy", 3.0);
+        payments.registerPayment("Dennis", "Eddy", 4.0);
+
+        payments.eliminateAllIndirectPayments();
+        Map<String, Double> allInfluxes = payments.getAllInfluxes();
+        String resolvingPayments = payments.getResolvingPayments();
+
+        assertThat(resolvingPayments).isEqualTo("""
+                        Claire owes Bob 1.0
+                        Eddy owes Alex 2.0
+                        Eddy owes Claire 5.0
+                        Eddy owes Dennis 1.0""");
+        assertThat(allInfluxes)
+                .containsEntry("Alex", -2.0)
+                .containsEntry("Bob", -1.0)
+                .containsEntry("Claire", -4.0)
+                .containsEntry("Eddy", 8.0)
+                .containsEntry("Dennis", -1.0);
+    }
+
+    @Test
     void itShouldSimplifyRandomPaymentsWhileRetainingEqualInfluxes() {
         registerRandomPayments(100, 500, 1337);
         Map<String, Double> expectedInfluxes = payments.getAllInfluxes();

@@ -52,11 +52,12 @@ public class Payments {
         while (!isSimplified()){
             eliminateAllCyclicPayments();
             eliminateAllChainedPayments();
+            eliminateAllIndirectPayments();
         }
     }
 
     public boolean isSimplified() {
-        return graph.getCycle().isEmpty() && graph.getMaximumChain().isEmpty();
+        return graph.getCycle().isEmpty() && graph.getMaximumChain().isEmpty() && graph.getAlternativePath().isEmpty();
     }
 
     public void eliminateAllCyclicPayments() {
@@ -84,6 +85,24 @@ public class Payments {
             }
             graph.flipEdgesWithNegativeWeight(chain);
             graph.deleteEdgesWithZeroWeight(chain);
+        }
+    }
+
+    public void eliminateAllIndirectPayments() {
+        Optional<List<Vertex>> indirectPaymentMaybe;
+        while ((indirectPaymentMaybe = graph.getAlternativePath()).isPresent()) {
+            List<Vertex> indirectPaymentVertices = indirectPaymentMaybe.get();
+            List<WeightedEdge> indirectPaymentEdges = graph.getEdgesOfChain(indirectPaymentVertices);
+            double smallestIndirectPayment = graph.getSmallestWeight(indirectPaymentEdges);
+            graph.reduceEdgeWeights(indirectPaymentEdges, smallestIndirectPayment);
+            graph.deleteEdgesWithZeroWeight(indirectPaymentEdges);
+            Vertex startVertex = indirectPaymentVertices.get(0);
+            Vertex targetVertex = indirectPaymentVertices.get(indirectPaymentVertices.size() - 1);
+            Optional<WeightedEdge> directPaymentEdgeMaybe = startVertex.getOutEdgeToVertex(targetVertex);
+            if (directPaymentEdgeMaybe.isEmpty()) {
+                break;
+            }
+            directPaymentEdgeMaybe.get().addWeight(smallestIndirectPayment);
         }
     }
 
