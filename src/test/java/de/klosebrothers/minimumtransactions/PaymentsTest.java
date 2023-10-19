@@ -292,17 +292,6 @@ class PaymentsTest {
         assertThat(actualInfluxes).containsExactlyInAnyOrderEntriesOf(expectedInfluxes);
     }
 
-    @Test
-    void itShouldRenderWithJGraph() throws URISyntaxException {
-        registerRandomPayments(15, 150, 1337);
-
-        payments.renderPayments("testRender");
-
-        File testRenderFile = new File("src/generated/resources/testRender.png");
-
-        assertThat(testRenderFile).isFile();
-    }
-
     private void registerExamplePayments() {
         payments.registerPayment("Alex", "Bob", 10.0);
         payments.registerPayment("Bob", "Clara", 3.0);

@@ -134,9 +134,9 @@ public class Payments {
         return graph.addEdge(giver, recipient, 0.0);
     }
 
-    public void renderPayments(String fileName) {
+    private void renderPaymentGraph(String fileName) {
         try {
-            Renderer.renderPng(Renderer.getJGraph(graph), fileName);
+            Renderer.renderPng(graph, fileName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
