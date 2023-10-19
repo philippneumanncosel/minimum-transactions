@@ -473,4 +473,64 @@ class WeightedGraphTest {
         assertThat(chain).isPresent();
         assertThat(chain.get()).contains(firstChainEdge, sedondChainEdge, thirdChainEdge, fourthChainEdge, fithChainEdge);
     }
+
+    @Test
+    void itShouldNotFindAlternativePathForDirectNeighbors() {
+        WeightedGraph graph = new WeightedGraph();
+
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+
+        graph.addEdge(vertexA, vertexB, 1.0);
+
+        Optional<List<Vertex>> alternativePath = graph.getAlternativePath();
+
+        assertThat(alternativePath).isEmpty();
+    }
+
+    @Test
+    void itShouldNotFindAlternativePathForGraphNotContainingAnAlternativePath() {
+        WeightedGraph graph = new WeightedGraph();
+
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+        Vertex vertexC = new Vertex("C");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addVertex(vertexC);
+
+        graph.addEdge(vertexA, vertexB, 1.0);
+        graph.addEdge(vertexB, vertexC, 1.0);
+        graph.addEdge(vertexC, vertexA, 1.0);
+
+        Optional<List<Vertex>> alternativePath = graph.getAlternativePath();
+
+        assertThat(alternativePath).isEmpty();
+    }
+
+    @Test
+    void itShouldFindAlternativePath() {
+        WeightedGraph graph = new WeightedGraph();
+
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+        Vertex vertexC = new Vertex("C");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addVertex(vertexC);
+
+        graph.addEdge(vertexA, vertexB, 1.0);
+        graph.addEdge(vertexA, vertexC, 1.0);
+        graph.addEdge(vertexB, vertexC, 2.0);
+
+        Optional<List<Vertex>> alternativePath = graph.getAlternativePath();
+
+        assertThat(alternativePath).isPresent();
+        assertThat(alternativePath.get()).contains(vertexA, vertexB, vertexC);
+    }
 }

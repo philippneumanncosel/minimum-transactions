@@ -76,21 +76,28 @@ public class WeightedGraph {
     }
 
     public List<WeightedEdge> getEdgesOfCycle(List<Vertex> cycleVertices) {
-        ArrayList<WeightedEdge> cycleEdges = new ArrayList<>();
+        List<WeightedEdge> cycleEdges = getEdgesOfChain(cycleVertices);
         if (!cycleVertices.isEmpty()) {
-            for (int vertexIndex = 0; vertexIndex < cycleVertices.size() - 1; vertexIndex++) {
-                Optional<WeightedEdge> edgeMaybe = cycleVertices.get(vertexIndex)
-                        .getOutEdgeToVertex(cycleVertices.get(vertexIndex + 1));
-                if (edgeMaybe.isEmpty()) {
-                    continue;
-                }
-                cycleEdges.add(edgeMaybe.get());
-            }
             Optional<WeightedEdge> closingCycleEdge = cycleVertices.get(cycleVertices.size() - 1)
                     .getOutEdgeToVertex(cycleVertices.get(0));
             closingCycleEdge.ifPresent(cycleEdges::add);
         }
         return cycleEdges;
+    }
+
+    public List<WeightedEdge> getEdgesOfChain(List<Vertex> chainVertices) {
+        List<WeightedEdge> chainEdges = new ArrayList<>();
+        if (!chainVertices.isEmpty()) {
+            for (int vertexIndex = 0; vertexIndex < chainVertices.size() - 1; vertexIndex++) {
+                Optional<WeightedEdge> edgeMaybe = chainVertices.get(vertexIndex)
+                        .getOutEdgeToVertex(chainVertices.get(vertexIndex + 1));
+                if (edgeMaybe.isEmpty()) {
+                    continue;
+                }
+                chainEdges.add(edgeMaybe.get());
+            }
+        }
+        return chainEdges;
     }
 
     public double getSmallestWeight(List<WeightedEdge> edges) {
@@ -180,5 +187,43 @@ public class WeightedGraph {
             return flippedEdgeMaybe.get();
         }
         return addEdge(edge.getDestination(), edge.getSource(), -edge.getWeight());
+    }
+
+    public Optional<List<Vertex>> getAlternativePath() {
+        return vertices.stream()
+                .map(this::getAlternativePathToNeighborVerticesOfVertex)
+                .filter(Optional::isPresent)
+                .findAny()
+                .orElse(Optional.empty());
+    }
+
+    private Optional<List<Vertex>> getAlternativePathToNeighborVerticesOfVertex(Vertex vertex) {
+        List<Vertex> outVertices = vertex.getOutVertices();
+        if (outVertices.size() < 2) {
+            return Optional.empty();
+        }
+        return getSmallestAlternativePathToNeighborVertices(vertex);
+    }
+
+    private Optional<List<Vertex>> getSmallestAlternativePathToNeighborVertices(Vertex vertex) {
+        Stack<Vertex> potentialChain = new Stack<>();
+        if (processVertexForAlternativePathSearch(vertex.getOutVertices(), vertex, potentialChain)) {
+            return Optional.of(potentialChain.stream().toList());
+        }
+        return Optional.empty();
+    }
+
+    private boolean processVertexForAlternativePathSearch(List<Vertex> targetVertices, Vertex currentVertex, Stack<Vertex> potentialChain) {
+        potentialChain.push(currentVertex);
+        if (potentialChain.size() > 2 && targetVertices.contains(currentVertex)) {
+            return true;
+        }
+        if (currentVertex.getOutVertices().stream()
+                .filter(Predicate.not(potentialChain::contains)).toList().stream()
+                .anyMatch(nextVertex -> processVertexForAlternativePathSearch(targetVertices, nextVertex, potentialChain))) {
+            return true;
+        }
+        potentialChain.pop();
+        return false;
     }
 }
