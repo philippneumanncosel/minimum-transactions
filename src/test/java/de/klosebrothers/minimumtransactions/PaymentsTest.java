@@ -3,6 +3,8 @@ package de.klosebrothers.minimumtransactions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Random;
 
@@ -288,6 +290,17 @@ class PaymentsTest {
 
         Map<String, Double> actualInfluxes = payments.getAllInfluxes();
         assertThat(actualInfluxes).containsExactlyInAnyOrderEntriesOf(expectedInfluxes);
+    }
+
+    @Test
+    void itShouldRenderWithJGraph() throws URISyntaxException {
+        registerRandomPayments(15, 150, 1337);
+
+        payments.renderPayments("testRender");
+
+        File testRenderFile = new File("src/generated/resources/testRender.png");
+
+        assertThat(testRenderFile).isFile();
     }
 
     private void registerExamplePayments() {

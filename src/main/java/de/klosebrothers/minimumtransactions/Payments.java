@@ -1,9 +1,11 @@
 package de.klosebrothers.minimumtransactions;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import de.klosebrothers.rendering.Renderer;
 import de.klosebrothers.graph.Vertex;
 import de.klosebrothers.graph.WeightedEdge;
 import de.klosebrothers.graph.WeightedGraph;
@@ -126,5 +128,13 @@ public class Payments {
 
     private WeightedEdge createNewEmptyPayment(Vertex giver, Vertex recipient) {
         return graph.addEdge(giver, recipient, 0.0);
+    }
+
+    public void renderPayments(String fileName) {
+        try {
+            Renderer.renderPng(Renderer.getJGraph(graph), fileName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
