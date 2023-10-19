@@ -13,6 +13,36 @@ import org.junit.jupiter.api.Test;
 class GraphUtilitiesTest {
 
     @Test
+    void itShouldReturnEmptyListForEmptyChain() {
+        List<WeightedEdge> chainEdges = GraphUtilities.getEdgesOfChain(new ArrayList<>());
+
+        assertThat(chainEdges).isEmpty();
+    }
+
+    @Test
+    void itShouldReturnEdgesForGivenChain() {
+        WeightedGraph graph = new WeightedGraph();
+        Vertex vertexA = new Vertex("A");
+        Vertex vertexB = new Vertex("B");
+        Vertex vertexC = new Vertex("C");
+
+        graph.addVertex(vertexA);
+        graph.addVertex(vertexB);
+        graph.addVertex(vertexC);
+        graph.addEdge(vertexA, vertexB, 0.0);
+        graph.addEdge(vertexB, vertexC, 0.0);
+        graph.addEdge(vertexC, vertexA, 0.0);
+
+        List<WeightedEdge> cycleEdges = GraphUtilities.getEdgesOfChain(List.of(vertexA, vertexB, vertexC));
+
+        assertThat(cycleEdges).hasSize(2);
+        assertThat(cycleEdges.get(0).getSource()).isEqualTo(vertexA);
+        assertThat(cycleEdges.get(1).getSource()).isEqualTo(vertexB);
+        assertThat(cycleEdges.get(0).getDestination()).isEqualTo(vertexB);
+        assertThat(cycleEdges.get(1).getDestination()).isEqualTo(vertexC);
+    }
+
+    @Test
     void itShouldReturnEmptyListForEmptyCycle() {
         List<WeightedEdge> cycleEdges = GraphUtilities.getEdgesOfCycle(new ArrayList<>());
 
