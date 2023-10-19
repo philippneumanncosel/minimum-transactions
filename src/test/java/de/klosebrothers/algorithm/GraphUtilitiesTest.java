@@ -46,8 +46,6 @@ class GraphUtilitiesTest {
 
     @Test
     void itShouldReturnZeroForEmptyEdgeList() {
-        WeightedGraph graph = new WeightedGraph();
-
         double smallestWeightOfCycle = GraphUtilities.getSmallestWeight(new ArrayList<>());
 
         assertThat(smallestWeightOfCycle).isZero();
@@ -55,7 +53,6 @@ class GraphUtilitiesTest {
 
     @Test
     void itShouldReturnSmallestWeightForCycle() {
-        WeightedGraph graph = new WeightedGraph();
         WeightedEdge edgeA = new WeightedEdge(null , null, 1.0);
         WeightedEdge edgeB = new WeightedEdge(null , null, 2.0);
         WeightedEdge edgeC = new WeightedEdge(null , null, 3.0);
