@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import de.klosebrothers.algorithm.AlternativePathDetector;
+import de.klosebrothers.algorithm.CycleDetector;
+import de.klosebrothers.algorithm.GraphUtilities;
+import de.klosebrothers.algorithm.MaximumChainDetector;
 import de.klosebrothers.rendering.Renderer;
 import de.klosebrothers.graph.Vertex;
 import de.klosebrothers.graph.WeightedEdge;
@@ -59,21 +63,21 @@ public class Payments {
     }
 
     public boolean isSimplified() {
-        return graph.getCycle().isEmpty() && graph.getMaximumChain().isEmpty() && graph.getAlternativePath().isEmpty();
+        return CycleDetector.getCycle(graph).isEmpty() && MaximumChainDetector.getMaximumChain(graph).isEmpty() && AlternativePathDetector.getAlternativePath(graph).isEmpty();
     }
 
     public void eliminateAllCyclicPayments() {
         List<Vertex> cycle;
-        while (!(cycle = graph.getCycle()).isEmpty()) {
-            List<WeightedEdge> edgesOfCycle = graph.getEdgesOfCycle(cycle);
-            graph.reduceEdgeWeights(edgesOfCycle, graph.getSmallestWeight(edgesOfCycle));
+        while (!(cycle = CycleDetector.getCycle(graph)).isEmpty()) {
+            List<WeightedEdge> edgesOfCycle = GraphUtilities.getEdgesOfCycle(cycle);
+            graph.reduceEdgeWeights(edgesOfCycle, GraphUtilities.getSmallestWeight(edgesOfCycle));
             graph.deleteEdgesWithZeroWeight(edgesOfCycle);
         }
     }
 
     public void eliminateAllChainedPayments() {
         Optional<List<WeightedEdge>> chainMaybe;
-        while ((chainMaybe = graph.getMaximumChain()).isPresent()) {
+        while ((chainMaybe = MaximumChainDetector.getMaximumChain(graph)).isPresent()) {
             List<WeightedEdge> chain = chainMaybe.get();
             double chainWeight = chain.get(0).getWeight();
             graph.reduceEdgeWeights(chain, chainWeight);
@@ -92,10 +96,10 @@ public class Payments {
 
     public void eliminateAllIndirectPayments() {
         Optional<List<Vertex>> indirectPaymentMaybe;
-        while ((indirectPaymentMaybe = graph.getAlternativePath()).isPresent()) {
+        while ((indirectPaymentMaybe = AlternativePathDetector.getAlternativePath(graph)).isPresent()) {
             List<Vertex> indirectPaymentVertices = indirectPaymentMaybe.get();
-            List<WeightedEdge> indirectPaymentEdges = graph.getEdgesOfChain(indirectPaymentVertices);
-            double smallestIndirectPayment = graph.getSmallestWeight(indirectPaymentEdges);
+            List<WeightedEdge> indirectPaymentEdges = GraphUtilities.getEdgesOfChain(indirectPaymentVertices);
+            double smallestIndirectPayment = GraphUtilities.getSmallestWeight(indirectPaymentEdges);
             graph.reduceEdgeWeights(indirectPaymentEdges, smallestIndirectPayment);
             graph.deleteEdgesWithZeroWeight(indirectPaymentEdges);
             Vertex startVertex = indirectPaymentVertices.get(0);

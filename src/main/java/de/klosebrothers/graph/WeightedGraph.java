@@ -1,11 +1,8 @@
 package de.klosebrothers.graph;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Stack;
-import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,140 +40,8 @@ public class WeightedGraph {
         destinationVertex.removeInEdge(edge);
     }
 
-    public List<Vertex> getCycle() {
-        for (Vertex vertex : vertices) {
-            List<Vertex> cycle = getSmallestCycleContainingVertex(vertex);
-            if (!cycle.isEmpty()) {
-                return cycle;
-            }
-        }
-        return new ArrayList<>();
-    }
-
-    public List<Vertex> getSmallestCycleContainingVertex(Vertex vertex) {
-        List<Vertex> visited = new ArrayList<>();
-        Stack<Vertex> potentialCycle = new Stack<>();
-        processVertexForCyclesSearch(vertex, vertex, visited, potentialCycle);
-        return potentialCycle.stream().toList();
-    }
-
-    private boolean processVertexForCyclesSearch(Vertex startVertex, Vertex currentVertex, List<Vertex> visited, Stack<Vertex> potentialCycle) {
-        visited.add(currentVertex);
-        potentialCycle.push(currentVertex);
-        if (currentVertex.getOutVertices().contains(startVertex) && potentialCycle.size() > 1) {
-            return true;
-        }
-        if (currentVertex.getOutVertices().stream()
-                .filter(Predicate.not(visited::contains)).toList().stream()
-                .anyMatch(nextVertex -> processVertexForCyclesSearch(startVertex, nextVertex, visited, potentialCycle))) {
-            return true;
-        }
-        potentialCycle.pop();
-        return false;
-    }
-
-    public List<WeightedEdge> getEdgesOfCycle(List<Vertex> cycleVertices) {
-        List<WeightedEdge> cycleEdges = getEdgesOfChain(cycleVertices);
-        if (!cycleVertices.isEmpty()) {
-            Optional<WeightedEdge> closingCycleEdge = cycleVertices.get(cycleVertices.size() - 1)
-                    .getOutEdgeToVertex(cycleVertices.get(0));
-            closingCycleEdge.ifPresent(cycleEdges::add);
-        }
-        return cycleEdges;
-    }
-
-    public List<WeightedEdge> getEdgesOfChain(List<Vertex> chainVertices) {
-        List<WeightedEdge> chainEdges = new ArrayList<>();
-        if (!chainVertices.isEmpty()) {
-            for (int vertexIndex = 0; vertexIndex < chainVertices.size() - 1; vertexIndex++) {
-                Optional<WeightedEdge> edgeMaybe = chainVertices.get(vertexIndex)
-                        .getOutEdgeToVertex(chainVertices.get(vertexIndex + 1));
-                if (edgeMaybe.isEmpty()) {
-                    continue;
-                }
-                chainEdges.add(edgeMaybe.get());
-            }
-        }
-        return chainEdges;
-    }
-
-    public double getSmallestWeight(List<WeightedEdge> edges) {
-        return edges.stream().map(WeightedEdge::getWeight).min(Comparator.naturalOrder()).orElse(0.0);
-    }
-
     public void reduceEdgeWeights(List<WeightedEdge> edges, double amountToReduce) {
         edges.forEach(edge -> edge.subtractWeight(amountToReduce));
-    }
-
-    public Optional<List<WeightedEdge>> getMaximumChain() {
-        List<List<WeightedEdge>> chains = vertices.stream()
-                .flatMap(vertex -> vertex.getOutEdges().values().stream())
-                .map(this::getMaximumChainFromStartEdge)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .toList();
-        Long highestCountOfEqualWeight = chains.stream()
-                .map(chain -> getNumberOfEdgesWithWeight(chain, chain.get(0).getWeight()))
-                .max(Comparator.naturalOrder())
-                .orElse(0L);
-        return chains.stream().filter(chain -> getNumberOfEdgesWithWeight(chain, chain.get(0)
-                .getWeight()) == highestCountOfEqualWeight).findFirst();
-    }
-
-    public Optional<List<WeightedEdge>> getMaximumChainFromStartEdge(WeightedEdge edge) {
-        double weightToFind = edge.getWeight();
-        List<WeightedEdge> edgePath = List.of(edge);
-        List<List<WeightedEdge>> edgePaths = new ArrayList<>();
-        edgePaths.add(edgePath);
-        addAllEdgesToPathsRecursively(edge, edgePaths, edgePath);
-        edgePaths.forEach(edges -> removeTrailingEdgesNotHavingWeight(edges, weightToFind));
-        return getEdgePathContainingMostEdgesWithCertainWeightAndLeastOther(edgePaths, weightToFind);
-    }
-
-    private void addAllEdgesToPathsRecursively(WeightedEdge edge, List<List<WeightedEdge>> edgePaths, List<WeightedEdge> edgePath) {
-        edge.getDestination().getOutEdges().values().stream()
-                .filter(Predicate.not(edgePath::contains))
-                .forEach(nextEdge -> {
-                    List<WeightedEdge> nextEdgePath = new ArrayList<>(List.copyOf(edgePath));
-                    nextEdgePath.add(nextEdge);
-                    edgePaths.add(nextEdgePath);
-                    addAllEdgesToPathsRecursively(nextEdge, edgePaths, nextEdgePath);
-                });
-    }
-
-    public void removeTrailingEdgesNotHavingWeight(List<WeightedEdge> edges, double weight) {
-        while (edges.get(edges.size() - 1).getWeight() != weight) {
-            edges.remove(edges.size() - 1);
-        }
-    }
-
-    public Optional<List<WeightedEdge>> getEdgePathContainingMostEdgesWithCertainWeightAndLeastOther(List<List<WeightedEdge>> edgePaths, double weight) {
-        Optional<Long> maxOccurrenceOfWeightMaybe = edgePaths.stream()
-                .filter(edges -> edges.size() >= 2)
-                .map(edges -> getNumberOfEdgesWithWeight(edges, weight))
-                .max(Comparator.naturalOrder());
-        if (maxOccurrenceOfWeightMaybe.isEmpty()) {
-            return Optional.empty();
-        }
-        List<List<WeightedEdge>> filteredEdges = edgePaths.stream()
-                .filter(edges -> getNumberOfEdgesWithWeight(edges, weight) == maxOccurrenceOfWeightMaybe.get()).toList();
-        Optional<Integer> minNumberOfEdgesMaybe = filteredEdges.stream().map(List::size).min(Comparator.naturalOrder());
-        return minNumberOfEdgesMaybe.flatMap(integer -> filteredEdges.stream().filter(edges -> edges.size() == integer)
-                .findFirst());
-    }
-
-    public long getNumberOfEdgesWithWeight(List<WeightedEdge> edges, double weight) {
-        return edges.stream().filter(edge -> edge.getWeight() == weight).count();
-    }
-
-    public void deleteEdgesWithZeroWeight(List<WeightedEdge> edges) {
-        edges.stream()
-                .filter(edge -> edge.getWeight() == 0)
-                .forEach(edge -> removeEdge(edge.getSource(), edge.getDestination()));
-    }
-
-    public void flipEdgesWithNegativeWeight(List<WeightedEdge> edges) {
-        edges.stream().filter(edge -> edge.getWeight() < 0.0).forEach(this::flipEdge);
     }
 
     public WeightedEdge flipEdge(WeightedEdge edge) {
@@ -189,41 +54,13 @@ public class WeightedGraph {
         return addEdge(edge.getDestination(), edge.getSource(), -edge.getWeight());
     }
 
-    public Optional<List<Vertex>> getAlternativePath() {
-        return vertices.stream()
-                .map(this::getAlternativePathToNeighborVerticesOfVertex)
-                .filter(Optional::isPresent)
-                .findAny()
-                .orElse(Optional.empty());
+    public void flipEdgesWithNegativeWeight(List<WeightedEdge> edges) {
+        edges.stream().filter(edge -> edge.getWeight() < 0.0).forEach(this::flipEdge);
     }
 
-    private Optional<List<Vertex>> getAlternativePathToNeighborVerticesOfVertex(Vertex vertex) {
-        List<Vertex> outVertices = vertex.getOutVertices();
-        if (outVertices.size() < 2) {
-            return Optional.empty();
-        }
-        return getSmallestAlternativePathToNeighborVertices(vertex);
-    }
-
-    private Optional<List<Vertex>> getSmallestAlternativePathToNeighborVertices(Vertex vertex) {
-        Stack<Vertex> potentialChain = new Stack<>();
-        if (processVertexForAlternativePathSearch(vertex.getOutVertices(), vertex, potentialChain)) {
-            return Optional.of(potentialChain.stream().toList());
-        }
-        return Optional.empty();
-    }
-
-    private boolean processVertexForAlternativePathSearch(List<Vertex> targetVertices, Vertex currentVertex, Stack<Vertex> potentialChain) {
-        potentialChain.push(currentVertex);
-        if (potentialChain.size() > 2 && targetVertices.contains(currentVertex)) {
-            return true;
-        }
-        if (currentVertex.getOutVertices().stream()
-                .filter(Predicate.not(potentialChain::contains)).toList().stream()
-                .anyMatch(nextVertex -> processVertexForAlternativePathSearch(targetVertices, nextVertex, potentialChain))) {
-            return true;
-        }
-        potentialChain.pop();
-        return false;
+    public void deleteEdgesWithZeroWeight(List<WeightedEdge> edges) {
+        edges.stream()
+                .filter(edge -> edge.getWeight() == 0)
+                .forEach(edge -> removeEdge(edge.getSource(), edge.getDestination()));
     }
 }
