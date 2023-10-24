@@ -1,6 +1,5 @@
 package de.klosebrothers.minimumtransactions;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,16 +8,24 @@ import de.klosebrothers.algorithm.AlternativePathDetector;
 import de.klosebrothers.algorithm.CycleDetector;
 import de.klosebrothers.algorithm.GraphUtilities;
 import de.klosebrothers.algorithm.MaximumChainDetector;
-import de.klosebrothers.rendering.Renderer;
 import de.klosebrothers.graph.Vertex;
 import de.klosebrothers.graph.WeightedEdge;
 import de.klosebrothers.graph.WeightedGraph;
+import de.klosebrothers.rendering.Renderer;
 
 public class Payments {
+
     private final WeightedGraph graph;
+    private final Renderer renderer;
 
     public Payments() {
         graph = new WeightedGraph();
+        renderer = new Renderer("src/test/generated/resources/", "", 0);
+    }
+
+    public Payments(String name, int frameRatePerSecond) {
+        graph = new WeightedGraph();
+        renderer = new Renderer("src/test/generated/resources/", name, frameRatePerSecond);
     }
 
     public void registerPayment(String giverName, String recipientName, double paymentAmount) {
@@ -55,11 +62,13 @@ public class Payments {
     }
 
     public void simplify() {
+        renderer.renderPng(graph);
         while (!isSimplified()){
             eliminateAllCyclicPayments();
             eliminateAllChainedPayments();
             eliminateAllIndirectPayments();
         }
+        renderer.renderGif();
     }
 
     public boolean isSimplified() {
@@ -72,6 +81,7 @@ public class Payments {
             List<WeightedEdge> edgesOfCycle = GraphUtilities.getEdgesOfCycle(cycle);
             graph.reduceEdgeWeights(edgesOfCycle, GraphUtilities.getSmallestWeight(edgesOfCycle));
             graph.deleteEdgesWithZeroWeight(edgesOfCycle);
+            renderer.renderPng(graph);
         }
     }
 
@@ -91,6 +101,7 @@ public class Payments {
             }
             graph.flipEdgesWithNegativeWeight(chain);
             graph.deleteEdgesWithZeroWeight(chain);
+            renderer.renderPng(graph);
         }
     }
 
@@ -109,6 +120,7 @@ public class Payments {
                 break;
             }
             directPaymentEdgeMaybe.get().addWeight(smallestIndirectPayment);
+            renderer.renderPng(graph);
         }
     }
 
@@ -132,13 +144,5 @@ public class Payments {
 
     private WeightedEdge createNewEmptyPayment(Vertex giver, Vertex recipient) {
         return graph.addEdge(giver, recipient, 0.0);
-    }
-
-    private void renderPaymentGraph(String fileName) {
-        try {
-            Renderer.renderPng(graph, fileName);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

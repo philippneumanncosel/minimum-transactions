@@ -1,22 +1,35 @@
 package de.klosebrothers.minimumtransactions;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.io.File;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 class PaymentsTest {
 
+    private static final String TEST_GENERATED_RESOURCES_PATH = "src/test/generated/resources/";
     private Payments payments;
 
     @BeforeEach
     void setUp() {
         payments = new Payments();
+    }
+
+    @AfterEach
+    void tearDown() {
+        File testGeneratedResourcesDirectory = new File(TEST_GENERATED_RESOURCES_PATH);
+        try {
+            FileUtils.cleanDirectory(testGeneratedResourcesDirectory);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -283,13 +296,26 @@ class PaymentsTest {
 
     @Test
     void itShouldSimplifyRandomPaymentsWhileRetainingEqualInfluxes() {
-        registerRandomPayments(100, 500, 1337);
+        payments = new Payments("testsimplification", 25);
+        registerRandomPayments(5, 100, 1337);
         Map<String, Double> expectedInfluxes = payments.getAllInfluxes();
 
         payments.simplify();
 
         Map<String, Double> actualInfluxes = payments.getAllInfluxes();
         assertThat(actualInfluxes).containsExactlyInAnyOrderEntriesOf(expectedInfluxes);
+    }
+
+    @Test
+    void itShouldCreateGifOfStepsWhileSimplifyingPayments() {
+        payments = new Payments("testsimplification", 4);
+        registerRandomPayments(5, 100, 1337);
+
+        payments.simplify();
+
+        File createdGif = new File(TEST_GENERATED_RESOURCES_PATH + "testsimplification.gif");
+
+        assertThat(createdGif).isFile();
     }
 
     private void registerExamplePayments() {

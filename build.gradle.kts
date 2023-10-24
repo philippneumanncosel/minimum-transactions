@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.ir.backend.js.compile
-
 plugins {
     id("java")
     kotlin("jvm") version "1.9.20-Beta2"
@@ -13,6 +11,7 @@ repositories {
 }
 
 dependencies {
+    implementation("commons-io:commons-io:2.11.0")
     testImplementation("org.mockito:mockito-core:5.4.0")
     annotationProcessor("org.projectlombok:lombok:1.18.28")
     compileOnly("org.projectlombok:lombok:1.18.28")
@@ -23,6 +22,7 @@ dependencies {
     implementation("org.jgrapht:jgrapht-core:1.5.2")
     implementation("org.jgrapht:jgrapht-io:1.5.2")
     implementation("org.jgrapht:jgrapht-ext:1.5.2")
+    implementation("com.squareup:gifencoder:0.10.1")
 
 
 
