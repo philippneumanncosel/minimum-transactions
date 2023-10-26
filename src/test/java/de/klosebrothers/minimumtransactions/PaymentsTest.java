@@ -92,11 +92,11 @@ class PaymentsTest {
         registerExamplePayments();
 
         double paymentAlexBob = payments.getTotalPaymentFromTo("Alex", "Bob");
-        double paymentAlexClara = payments.getTotalPaymentFromTo("Bob", "Clara");
+        double paymentBobClara = payments.getTotalPaymentFromTo("Bob", "Clara");
         double paymentBobDennis = payments.getTotalPaymentFromTo("Bob", "Dennis");
 
         assertThat(paymentAlexBob).isEqualTo(10.0);
-        assertThat(paymentAlexClara).isEqualTo(3.0);
+        assertThat(paymentBobClara).isEqualTo(3.0);
         assertThat(paymentBobDennis).isEqualTo(2.0);
     }
 
