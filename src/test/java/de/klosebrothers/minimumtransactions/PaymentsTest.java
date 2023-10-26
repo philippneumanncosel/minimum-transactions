@@ -353,6 +353,7 @@ class PaymentsTest {
         payments.simplify(true);
 
         Map<String, Double> actualInfluxes = payments.getAllInfluxes();
+        String resolvingPayments = payments.getResolvingPayments();
         assertThat(actualInfluxes).containsExactlyInAnyOrderEntriesOf(expectedInfluxes);
     }
 
@@ -396,7 +397,7 @@ class PaymentsTest {
         payments.registerPayment("Fabi", 13.8, "Philly", "Janne");
         payments.registerPayment("Fabi", 13.5, "Philly", "Dunch", "Janne");
         payments.registerPayment("Fabi", 10.0, "Philly", "Dunch");
-        payments.registerPayment("Fabi", 7.9, "Philly");
+        payments.registerPayment("Fabi", 7.9, "Dunch");
         payments.registerPayment("Fabi", 4.8, "Wiebke");
         payments.registerPayment("Fabi", 5.8, "Janne");
         payments.registerPayment("Philly", 400.0, "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte", "Janne");
