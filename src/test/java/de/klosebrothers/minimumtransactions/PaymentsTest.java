@@ -353,7 +353,6 @@ class PaymentsTest {
         payments.simplify(true);
 
         Map<String, Double> actualInfluxes = payments.getAllInfluxes();
-        String resolvingPayments = payments.getResolvingPayments();
         assertThat(actualInfluxes).containsExactlyInAnyOrderEntriesOf(expectedInfluxes);
     }
 
