@@ -23,9 +23,6 @@ dependencies {
     implementation("org.jgrapht:jgrapht-io:1.5.2")
     implementation("org.jgrapht:jgrapht-ext:1.5.2")
     implementation("com.squareup:gifencoder:0.10.1")
-
-
-
 }
 
 tasks.test {
