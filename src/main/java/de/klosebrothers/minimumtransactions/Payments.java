@@ -61,31 +61,31 @@ public class Payments {
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
-    public void simplify() {
-        renderer.renderPng(graph);
+    public void simplify(boolean render) {
+        if (render) renderer.renderPng(graph);
         while (!isSimplified()){
-            eliminateAllCyclicPayments();
-            eliminateAllChainedPayments();
-            eliminateAllIndirectPayments();
+            eliminateAllCyclicPayments(render);
+            eliminateAllChainedPayments(render);
+            eliminateAllIndirectPayments(render);
         }
-        renderer.renderGif();
+        if (render) renderer.renderGif();
     }
 
     public boolean isSimplified() {
         return CycleDetector.getCycle(graph).isEmpty() && MaximumChainDetector.getMaximumChain(graph).isEmpty() && AlternativePathDetector.getAlternativePath(graph).isEmpty();
     }
 
-    public void eliminateAllCyclicPayments() {
+    public void eliminateAllCyclicPayments(boolean render) {
         List<Vertex> cycle;
         while (!(cycle = CycleDetector.getCycle(graph)).isEmpty()) {
             List<WeightedEdge> edgesOfCycle = GraphUtilities.getEdgesOfCycle(cycle);
             graph.reduceEdgeWeights(edgesOfCycle, GraphUtilities.getSmallestWeight(edgesOfCycle));
             graph.deleteEdgesWithZeroWeight(edgesOfCycle);
-            renderer.renderPng(graph);
+            if (render) renderer.renderPng(graph);
         }
     }
 
-    public void eliminateAllChainedPayments() {
+    public void eliminateAllChainedPayments(boolean render) {
         Optional<List<WeightedEdge>> chainMaybe;
         while ((chainMaybe = MaximumChainDetector.getMaximumChain(graph)).isPresent()) {
             List<WeightedEdge> chain = chainMaybe.get();
@@ -101,11 +101,11 @@ public class Payments {
             }
             graph.flipEdgesWithNegativeWeight(chain);
             graph.deleteEdgesWithZeroWeight(chain);
-            renderer.renderPng(graph);
+            if (render) renderer.renderPng(graph);
         }
     }
 
-    public void eliminateAllIndirectPayments() {
+    public void eliminateAllIndirectPayments(boolean render) {
         Optional<List<Vertex>> indirectPaymentMaybe;
         while ((indirectPaymentMaybe = AlternativePathDetector.getAlternativePath(graph)).isPresent()) {
             List<Vertex> indirectPaymentVertices = indirectPaymentMaybe.get();
@@ -120,7 +120,7 @@ public class Payments {
                 break;
             }
             directPaymentEdgeMaybe.get().addWeight(smallestIndirectPayment);
-            renderer.renderPng(graph);
+            if (render) renderer.renderPng(graph);
         }
     }
 

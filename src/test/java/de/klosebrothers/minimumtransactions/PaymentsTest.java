@@ -148,7 +148,7 @@ class PaymentsTest {
         payments.registerPayment("Alex", "Bob", 6.0);
         payments.registerPayment("Bob", "Alex", 5.0);
 
-        payments.eliminateAllCyclicPayments();
+        payments.eliminateAllCyclicPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
         String resolvingPayments = payments.getResolvingPayments();
 
@@ -165,7 +165,7 @@ class PaymentsTest {
         payments.registerPayment("Claire", "Alex", 10.0);
         payments.registerPayment("Bob", "Alex", 5.0);
 
-        payments.eliminateAllCyclicPayments();
+        payments.eliminateAllCyclicPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
         String resolvingPayments = payments.getResolvingPayments();
 
@@ -181,7 +181,7 @@ class PaymentsTest {
         payments.registerPayment("Alex", "Bob", 5.0);
         payments.registerPayment("Bob", "Claire", 5.0);
 
-        payments.eliminateAllChainedPayments();
+        payments.eliminateAllChainedPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
         String resolvingPayments = payments.getResolvingPayments();
 
@@ -200,7 +200,7 @@ class PaymentsTest {
         payments.registerPayment("Dennis", "Eddy", 1.0);
         payments.registerPayment("Eddy", "Frank", 2.0);
 
-        payments.eliminateAllChainedPayments();
+        payments.eliminateAllChainedPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
         String resolvingPayments = payments.getResolvingPayments();
 
@@ -229,7 +229,7 @@ class PaymentsTest {
         payments.registerPayment("Claire", "Henry", 2.0);
         payments.registerPayment("Henry", "Frank", 3.0);
 
-        payments.eliminateAllChainedPayments();
+        payments.eliminateAllChainedPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
         String resolvingPayments = payments.getResolvingPayments();
 
@@ -255,7 +255,7 @@ class PaymentsTest {
         payments.registerPayment("Alex", "Claire", 1.0);
         payments.registerPayment("Bob", "Claire", 2.0);
 
-        payments.eliminateAllIndirectPayments();
+        payments.eliminateAllIndirectPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
         String resolvingPayments = payments.getResolvingPayments();
 
@@ -277,7 +277,7 @@ class PaymentsTest {
         payments.registerPayment("Claire", "Eddy", 3.0);
         payments.registerPayment("Dennis", "Eddy", 4.0);
 
-        payments.eliminateAllIndirectPayments();
+        payments.eliminateAllIndirectPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
         String resolvingPayments = payments.getResolvingPayments();
 
@@ -300,7 +300,7 @@ class PaymentsTest {
         registerRandomPayments(5, 100, 1337);
         Map<String, Double> expectedInfluxes = payments.getAllInfluxes();
 
-        payments.simplify();
+        payments.simplify(false);
 
         Map<String, Double> actualInfluxes = payments.getAllInfluxes();
         assertThat(actualInfluxes).containsExactlyInAnyOrderEntriesOf(expectedInfluxes);
@@ -311,7 +311,7 @@ class PaymentsTest {
         payments = new Payments("testsimplification", 4);
         registerRandomPayments(5, 100, 1337);
 
-        payments.simplify();
+        payments.simplify(true);
 
         File createdGif = new File(TEST_GENERATED_RESOURCES_PATH + "testsimplification.gif");
 
