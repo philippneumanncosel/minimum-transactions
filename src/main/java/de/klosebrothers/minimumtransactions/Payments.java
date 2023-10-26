@@ -15,8 +15,6 @@ import de.klosebrothers.graph.WeightedGraph;
 import de.klosebrothers.rendering.Renderer;
 import de.klosebrothers.util.DoubleUtil;
 
-import static de.klosebrothers.util.DoubleUtil.roundToTwoPlaces;
-
 public class Payments {
 
     private final WeightedGraph graph;
