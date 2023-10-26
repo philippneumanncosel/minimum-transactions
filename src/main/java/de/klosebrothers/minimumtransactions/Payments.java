@@ -13,6 +13,9 @@ import de.klosebrothers.graph.Vertex;
 import de.klosebrothers.graph.WeightedEdge;
 import de.klosebrothers.graph.WeightedGraph;
 import de.klosebrothers.rendering.Renderer;
+import de.klosebrothers.util.DoubleUtil;
+
+import static de.klosebrothers.util.DoubleUtil.roundToTwoPlaces;
 
 public class Payments {
 
@@ -54,7 +57,8 @@ public class Payments {
     }
 
     public Map<String, Double> getAllInfluxes() {
-        return graph.getVertices().stream().collect(Collectors.toMap(Vertex::getName, Vertex::getInflux));
+        return graph.getVertices().stream()
+                .collect(Collectors.toMap(Vertex::getName, vertex -> DoubleUtil.roundToTwoPlaces(vertex.getInflux())));
     }
 
     public String getResolvingPayments() {
@@ -129,7 +133,7 @@ public class Payments {
     }
 
     private static String getPaymentAsString(WeightedEdge edge) {
-        return edge.getDestination().getName() + " owes " + edge.getSource().getName() + " " + edge.getWeight();
+        return edge.getDestination().getName() + " owes " + edge.getSource().getName() + " " + DoubleUtil.roundToTwoPlaces(edge.getWeight());
     }
 
     private Vertex getOrCreatePerson(String name) {

@@ -20,6 +20,7 @@ import com.squareup.gifencoder.FloydSteinbergDitherer;
 import com.squareup.gifencoder.GifEncoder;
 import com.squareup.gifencoder.ImageOptions;
 import de.klosebrothers.graph.WeightedGraph;
+import de.klosebrothers.util.DoubleUtil;
 import javax.imageio.ImageIO;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -130,7 +131,7 @@ public class Renderer {
     public static class WeightedEdge extends DefaultWeightedEdge {
         @Override
         public String toString() {
-            return String.valueOf(getWeight());
+            return String.valueOf(DoubleUtil.roundToTwoPlaces(getWeight()));
         }
     }
 }
