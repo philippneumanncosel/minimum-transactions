@@ -1,5 +1,6 @@
 package de.klosebrothers.minimumtransactions;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,11 +29,14 @@ public class Payments {
         renderer = new Renderer("src/test/generated/resources/", name, frameRatePerSecond);
     }
 
-    public void registerPayment(String giverName, String recipientName, double paymentAmount) {
-        Vertex giver = getOrCreatePerson(giverName);
-        Vertex recipient = getOrCreatePerson(recipientName);
-        WeightedEdge currentPayment = getOrCreatePayment(giver, recipient);
-        currentPayment.addWeight(paymentAmount);
+    public void registerPayment(String giverName, double paymentAmount, String... recipientNames) {
+        final double paymentAmountPerPerson = paymentAmount / recipientNames.length;
+        Arrays.stream(recipientNames).filter(name -> !name.equals(giverName)).forEach(recipientName -> {
+            Vertex giver = getOrCreatePerson(giverName);
+            Vertex recipient = getOrCreatePerson(recipientName);
+            WeightedEdge currentPayment = getOrCreatePayment(giver, recipient);
+            currentPayment.addWeight(paymentAmountPerPerson);
+        });
     }
 
     public double getTotalPaymentFromTo(String giverName, String recipientName) {

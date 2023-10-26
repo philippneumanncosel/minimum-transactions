@@ -2,6 +2,7 @@ package de.klosebrothers.minimumtransactions;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -41,7 +42,7 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnZeroForUnknownGiver() {
-        payments.registerPayment("sampleName", "known", 10.0);
+        payments.registerPayment("sampleName", 10.0, "known");
 
         double payment = payments.getTotalPaymentFromTo("unknown", "known");
 
@@ -50,7 +51,7 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnZeroForUnknownRecipient() {
-        payments.registerPayment("known", "sampleName", 10.0);
+        payments.registerPayment("known", 10.0, "sampleName");
 
         double payment = payments.getTotalPaymentFromTo("known", "unknown");
 
@@ -59,8 +60,8 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnZeroForKnownPersonsWithNoPaymentHistory() {
-        payments.registerPayment("A", "B", 10.0);
-        payments.registerPayment("B", "C", 10.0);
+        payments.registerPayment("A", 10.0, "B");
+        payments.registerPayment("B", 10.0, "C");
 
         double payment = payments.getTotalPaymentFromTo("A", "C");
 
@@ -69,7 +70,7 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnPayment() {
-        payments.registerPayment("Alex", "Bob", 10.0);
+        payments.registerPayment("Alex", 10.0, "Bob");
 
         double payment = payments.getTotalPaymentFromTo("Alex", "Bob");
 
@@ -78,9 +79,9 @@ class PaymentsTest {
 
     @Test
     void itShouldReturnSumOfMultiplePayments() {
-        payments.registerPayment("Alex", "Bob", 10.0);
-        payments.registerPayment("Alex", "Bob", 3.0);
-        payments.registerPayment("Alex", "Bob", 2.0);
+        payments.registerPayment("Alex", 10.0, "Bob");
+        payments.registerPayment("Alex", 3.0, "Bob");
+        payments.registerPayment("Alex", 2.0, "Bob");
 
         double payment = payments.getTotalPaymentFromTo("Alex", "Bob");
 
@@ -98,6 +99,32 @@ class PaymentsTest {
         assertThat(paymentAlexBob).isEqualTo(10.0);
         assertThat(paymentBobClara).isEqualTo(3.0);
         assertThat(paymentBobDennis).isEqualTo(2.0);
+    }
+
+    @Test
+    void itShouldReturnPaymentsForRegisteredPaymentWithMultipleReceivers() {
+        payments.registerPayment("Alex", 30.0, "Bob", "Clara", "Dennis");
+
+        double paymentAlexBob = payments.getTotalPaymentFromTo("Alex", "Bob");
+        double paymentAlexClara = payments.getTotalPaymentFromTo("Alex", "Clara");
+        double paymentAlexDennis = payments.getTotalPaymentFromTo("Alex", "Dennis");
+
+        assertThat(paymentAlexBob).isEqualTo(10.0);
+        assertThat(paymentAlexClara).isEqualTo(10.0);
+        assertThat(paymentAlexDennis).isEqualTo(10.0);
+    }
+
+    @Test
+    void itShouldReturnPaymentsForRegisteredPaymentWithMultipleReceiversIncludingSelf() {
+        payments.registerPayment("Alex", 40.0, "Bob", "Clara", "Dennis", "Alex");
+
+        double paymentAlexBob = payments.getTotalPaymentFromTo("Alex", "Bob");
+        double paymentAlexClara = payments.getTotalPaymentFromTo("Alex", "Clara");
+        double paymentAlexDennis = payments.getTotalPaymentFromTo("Alex", "Dennis");
+
+        assertThat(paymentAlexBob).isEqualTo(10.0);
+        assertThat(paymentAlexClara).isEqualTo(10.0);
+        assertThat(paymentAlexDennis).isEqualTo(10.0);
     }
 
     @Test
@@ -132,7 +159,7 @@ class PaymentsTest {
     @Test
     void itShouldListAllResolvingPayments() {
         registerExamplePayments();
-        payments.registerPayment("Alex", "Clara", 6.0);
+        payments.registerPayment("Alex", 6.0, "Clara");
 
         String resolvingPayments = payments.getResolvingPayments();
 
@@ -145,8 +172,8 @@ class PaymentsTest {
 
     @Test
     void itShouldEliminateMinimalCyclicPaymentsWhileRetainingEqualInfluxes() {
-        payments.registerPayment("Alex", "Bob", 6.0);
-        payments.registerPayment("Bob", "Alex", 5.0);
+        payments.registerPayment("Alex", 6.0, "Bob");
+        payments.registerPayment("Bob", 5.0, "Alex");
 
         payments.eliminateAllCyclicPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
@@ -160,10 +187,10 @@ class PaymentsTest {
 
     @Test
     void itShouldEliminateMultipleCyclicPaymentsWhileRetainingEqualInfluxes() {
-        payments.registerPayment("Alex", "Bob", 16.0);
-        payments.registerPayment("Bob", "Claire", 10.0);
-        payments.registerPayment("Claire", "Alex", 10.0);
-        payments.registerPayment("Bob", "Alex", 5.0);
+        payments.registerPayment("Alex", 16.0, "Bob");
+        payments.registerPayment("Bob", 10.0, "Claire");
+        payments.registerPayment("Claire", 10.0, "Alex");
+        payments.registerPayment("Bob", 5.0, "Alex");
 
         payments.eliminateAllCyclicPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
@@ -178,8 +205,8 @@ class PaymentsTest {
 
     @Test
     void itShouldEliminateMinimalChainedPaymentsWhileRetainingEqualInfluxes() {
-        payments.registerPayment("Alex", "Bob", 5.0);
-        payments.registerPayment("Bob", "Claire", 5.0);
+        payments.registerPayment("Alex", 5.0, "Bob");
+        payments.registerPayment("Bob", 5.0, "Claire");
 
         payments.eliminateAllChainedPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
@@ -194,11 +221,11 @@ class PaymentsTest {
 
     @Test
     void itShouldEliminateLargerChainedPaymentsWhileRetainingEqualInfluxes() {
-        payments.registerPayment("Alex", "Bob", 1.0);
-        payments.registerPayment("Bob", "Claire", 2.0);
-        payments.registerPayment("Claire", "Dennis", 2.0);
-        payments.registerPayment("Dennis", "Eddy", 1.0);
-        payments.registerPayment("Eddy", "Frank", 2.0);
+        payments.registerPayment("Alex", 1.0, "Bob");
+        payments.registerPayment("Bob", 2.0, "Claire");
+        payments.registerPayment("Claire", 2.0, "Dennis");
+        payments.registerPayment("Dennis", 1.0, "Eddy");
+        payments.registerPayment("Eddy", 2.0, "Frank");
 
         payments.eliminateAllChainedPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
@@ -219,15 +246,15 @@ class PaymentsTest {
 
     @Test
     void itShouldEliminateMultipleChainedPaymentsWhileRetainingEqualInfluxes() {
-        payments.registerPayment("Alex", "Bob", 2.0);
-        payments.registerPayment("Bob", "Claire", 2.0);
-        payments.registerPayment("Claire", "Dennis", 1.0);
-        payments.registerPayment("Dennis", "Eddy", 2.0);
-        payments.registerPayment("Eddy", "Frank", 2.0);
-        payments.registerPayment("Bob", "Greg", 2.0);
-        payments.registerPayment("Greg", "Claire", 2.0);
-        payments.registerPayment("Claire", "Henry", 2.0);
-        payments.registerPayment("Henry", "Frank", 3.0);
+        payments.registerPayment("Alex", 2.0, "Bob");
+        payments.registerPayment("Bob", 2.0, "Claire");
+        payments.registerPayment("Claire", 1.0, "Dennis");
+        payments.registerPayment("Dennis", 2.0, "Eddy");
+        payments.registerPayment("Eddy", 2.0, "Frank");
+        payments.registerPayment("Bob", 2.0, "Greg");
+        payments.registerPayment("Greg", 2.0, "Claire");
+        payments.registerPayment("Claire", 2.0, "Henry");
+        payments.registerPayment("Henry", 3.0, "Frank");
 
         payments.eliminateAllChainedPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
@@ -251,9 +278,9 @@ class PaymentsTest {
 
     @Test
     void itShouldEliminateIndirectPayments() {
-        payments.registerPayment("Alex", "Bob", 1.0);
-        payments.registerPayment("Alex", "Claire", 1.0);
-        payments.registerPayment("Bob", "Claire", 2.0);
+        payments.registerPayment("Alex", 1.0, "Bob");
+        payments.registerPayment("Alex", 1.0, "Claire");
+        payments.registerPayment("Bob", 2.0, "Claire");
 
         payments.eliminateAllIndirectPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
@@ -270,12 +297,12 @@ class PaymentsTest {
 
     @Test
     void itShouldEliminateMultipleIndirectPayments() {
-        payments.registerPayment("Alex", "Bob", 1.0);
-        payments.registerPayment("Alex", "Eddy", 1.0);
-        payments.registerPayment("Bob", "Claire", 2.0);
-        payments.registerPayment("Claire", "Dennis", 3.0);
-        payments.registerPayment("Claire", "Eddy", 3.0);
-        payments.registerPayment("Dennis", "Eddy", 4.0);
+        payments.registerPayment("Alex", 1.0, "Bob");
+        payments.registerPayment("Alex", 1.0, "Eddy");
+        payments.registerPayment("Bob", 2.0, "Claire");
+        payments.registerPayment("Claire", 3.0, "Dennis");
+        payments.registerPayment("Claire", 3.0, "Eddy");
+        payments.registerPayment("Dennis", 4.0, "Eddy");
 
         payments.eliminateAllIndirectPayments(false);
         Map<String, Double> allInfluxes = payments.getAllInfluxes();
@@ -319,9 +346,9 @@ class PaymentsTest {
     }
 
     private void registerExamplePayments() {
-        payments.registerPayment("Alex", "Bob", 10.0);
-        payments.registerPayment("Bob", "Clara", 3.0);
-        payments.registerPayment("Bob", "Dennis", 2.0);
+        payments.registerPayment("Alex", 10.0, "Bob");
+        payments.registerPayment("Bob", 3.0, "Clara");
+        payments.registerPayment("Bob", 2.0, "Dennis");
     }
 
     private void registerRandomPayments(int numberPersons, int numberPayments, int seed) {
@@ -333,7 +360,7 @@ class PaymentsTest {
             if (giver == recipient) {
                 ++recipient;
             }
-            payments.registerPayment("Person"+giver, "Person"+recipient, amount);
+            payments.registerPayment("Person"+giver, amount, "Person"+recipient);
         }
     }
 }
