@@ -2,7 +2,6 @@ package de.klosebrothers.minimumtransactions;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -345,6 +344,18 @@ class PaymentsTest {
         assertThat(createdGif).isFile();
     }
 
+    @Test
+    void itShouldSimplifyPaymentsForRealWorldData() {
+        payments = new Payments("Plose", 1);
+        registerRealWorldPayments();
+        Map<String, Double> expectedInfluxes = payments.getAllInfluxes();
+
+        payments.simplify(true);
+
+        Map<String, Double> actualInfluxes = payments.getAllInfluxes();
+        assertThat(actualInfluxes).containsExactlyInAnyOrderEntriesOf(expectedInfluxes);
+    }
+
     private void registerExamplePayments() {
         payments.registerPayment("Alex", 10.0, "Bob");
         payments.registerPayment("Bob", 3.0, "Clara");
@@ -362,5 +373,38 @@ class PaymentsTest {
             }
             payments.registerPayment("Person"+giver, amount, "Person"+recipient);
         }
+    }
+
+    private void registerRealWorldPayments() {
+        payments.registerPayment("Philly", 80.0, "Fabi", "Paul", "Philly");
+        payments.registerPayment("Fabi", 80.0 , "Fabi", "Paul", "Philly");
+        payments.registerPayment("Paul", 20.0, "Fabi");
+        payments.registerPayment("Philly", 11.0, "Fabi", "Paul", "Philly");
+        payments.registerPayment("Paul", 31.86, "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte");
+        payments.registerPayment("Fabi", 140.0, "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte");
+        payments.registerPayment("Philly", 70.0, "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte");
+        payments.registerPayment("Malte", 116.0, "Dunch", "Wiebke", "Malte");
+        payments.registerPayment("Philly", 215.0, "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte", "Janne");
+        payments.registerPayment("Philly", 100.0, "Fabi", "Paul", "Philly", "Dunch", "Malte");
+        payments.registerPayment("Fabi", 15.0, "Fabi", "Paul", "Philly", "Dunch", "Malte");
+        payments.registerPayment("Philly", 40.0, "Philly", "Malte");
+        payments.registerPayment("Paul", 7.5, "Malte");
+        payments.registerPayment("Fabi", 145.0 , "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte", "Janne");
+        payments.registerPayment("Fabi", 26.0 , "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte", "Janne");
+        payments.registerPayment("Fabi", 37.0 , "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte", "Janne");
+        payments.registerPayment("Fabi", 17.5 , "Fabi", "Philly", "Dunch", "Wiebke", "Janne");
+        payments.registerPayment("Fabi", 13.8, "Philly", "Janne");
+        payments.registerPayment("Fabi", 13.5, "Philly", "Dunch", "Janne");
+        payments.registerPayment("Fabi", 10.0, "Philly", "Dunch");
+        payments.registerPayment("Fabi", 7.9, "Philly");
+        payments.registerPayment("Fabi", 4.8, "Wiebke");
+        payments.registerPayment("Fabi", 5.8, "Janne");
+        payments.registerPayment("Philly", 400.0, "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte", "Janne");
+        payments.registerPayment("Philly", 200.0, "Fabi", "Paul", "Philly", "Dunch", "Wiebke", "Malte");
+        payments.registerPayment("Fabi", 22.0, "Philly", "Dunch", "Wiebke", "Janne");
+        payments.registerPayment("Fabi", 15.0, "Malte");
+        payments.registerPayment("Janne", 58.0, "Fabi", "Paul", "Philly", "Janne");
+        payments.registerPayment("Philly", 11.0, "Fabi", "Paul", "Philly", "Janne");
+        payments.registerPayment("Fabi", 50.0, "Fabi", "Paul", "Philly", "Janne");
     }
 }
