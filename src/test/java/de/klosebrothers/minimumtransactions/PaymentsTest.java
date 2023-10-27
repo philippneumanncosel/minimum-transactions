@@ -2,6 +2,8 @@ package de.klosebrothers.minimumtransactions;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Random;
 
@@ -9,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +19,15 @@ class PaymentsTest {
 
     private static final String TEST_GENERATED_RESOURCES_PATH = "src/test/generated/resources/";
     private Payments payments;
+
+    @BeforeAll
+    static void beforeAll() {
+        try {
+            Files.createDirectories(Paths.get(TEST_GENERATED_RESOURCES_PATH));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @BeforeEach
     void setUp() {
